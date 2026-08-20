@@ -3,6 +3,7 @@
 export const GOOGLE_FONTS = [
   { family: "Be Vietnam Pro", weights: [400, 700, 900] },
   { family: "Inter", weights: [400, 700, 900] },
+  { family: "IBM Plex Sans", weights: [400, 600, 700] },
   { family: "Roboto", weights: [400, 700, 900] },
   { family: "Open Sans", weights: [400, 700, 800] },
   { family: "Montserrat", weights: [400, 700, 900] },

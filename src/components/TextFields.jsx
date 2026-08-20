@@ -3,6 +3,12 @@ import { useId } from "react";
 import { GOOGLE_FONTS, weightsOf } from "../lib/google-fonts.js";
 import { SelectRow } from "./controls.jsx";
 
+const ALIGN_OPTIONS = [
+  { value: "left", label: "Canh trái" },
+  { value: "center", label: "Canh giữa" },
+  { value: "right", label: "Canh phải" }
+];
+
 const WEIGHT_LABELS = { 400: "Thường", 500: "Vừa", 600: "Đậm vừa", 700: "Đậm", 800: "Rất đậm", 900: "Đậm nhất" };
 
 export default function TextFields({ layer, patch }) {
@@ -29,6 +35,12 @@ export default function TextFields({ layer, patch }) {
           const next = weightsOf(font);
           patch({ font, weight: next.includes(layer.weight) ? layer.weight : next[next.length - 1] });
         }}
+      />
+      <SelectRow
+        label="Canh chữ"
+        value={layer.align || "center"}
+        options={ALIGN_OPTIONS}
+        onChange={(align) => patch({ align })}
       />
       <SelectRow
         label="Độ đậm"

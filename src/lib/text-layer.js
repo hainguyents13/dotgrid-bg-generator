@@ -5,7 +5,7 @@ import { loadFont, DEFAULT_FONT } from "./google-fonts.js";
 /** Cỡ chữ khi dựng canvas nguồn, đủ lớn để mặt nạ lưới không bị răng cưa. */
 const RENDER_SIZE = 320;
 const LINE_HEIGHT = 1.15;
-const PAD = 8;
+const PAD = 16;
 
 export function makeTextLayer() {
   return {
@@ -16,6 +16,7 @@ export function makeTextLayer() {
     text: "TEXT",
     font: DEFAULT_FONT.family,
     weight: DEFAULT_FONT.weights[DEFAULT_FONT.weights.length - 1],
+    align: "center",
     /* Chữ vẽ ra đã là khối đặc nên lấy luôn màu của lớp. */
     tint: 0
   };
@@ -53,9 +54,16 @@ export async function renderTextCanvas(layer) {
   const g = cv.getContext("2d");
   g.font = font;
   g.fillStyle = "#ffffff";
-  g.textAlign = "center";
+  g.textAlign = "left";
   g.textBaseline = "alphabetic";
-  lines.forEach((line, i) => g.fillText(line, cv.width / 2, PAD + ascent + i * lineH));
+
+  /* Canh từng dòng bên trong khối chữ, không canh theo mép canvas. */
+  const align = layer.align || "center";
+  lines.forEach((line, i) => {
+    const slack = width - metrics[i].width;
+    const offset = align === "left" ? 0 : align === "right" ? slack : slack / 2;
+    g.fillText(line, PAD + offset, PAD + ascent + i * lineH);
+  });
   return cv;
 }
 
@@ -63,6 +71,6 @@ export async function renderTextCanvas(layer) {
 export function textSignature(layers) {
   return layers
     .filter(isTextLayer)
-    .map((L) => [L.id, L.text, L.font, L.weight].join("~"))
+    .map((L) => [L.id, L.text, L.font, L.weight, L.align].join("~"))
     .join("|");
 }
