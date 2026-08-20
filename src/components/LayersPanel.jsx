@@ -19,7 +19,11 @@ function LayerRow({ layer, index, total, selected, onSelect, onToggle, onMove, o
       >
         {layer.visible ? "◉" : "○"}
       </button>
-      <img className="thumb" src={layer.src} alt="" />
+      {layer.kind === "text" ? (
+        <span className="thumb thumb-text">T</span>
+      ) : (
+        <img className="thumb" src={layer.src} alt="" />
+      )}
       <span
         className="lname"
         title="Bấm đúp để đổi tên"
@@ -69,7 +73,7 @@ function LayerRow({ layer, index, total, selected, onSelect, onToggle, onMove, o
   );
 }
 
-export default function LayersPanel({ layers, selectedId, onAddFiles, ...handlers }) {
+export default function LayersPanel({ layers, selectedId, onAddFiles, onAddText, ...handlers }) {
   const inputRef = useRef(null);
   const [over, setOver] = useState(false);
   const total = layers.length;
@@ -126,6 +130,9 @@ export default function LayersPanel({ layers, selectedId, onAddFiles, ...handler
       >
         Kéo file SVG hoặc PNG vào đây, hoặc bấm để chọn
       </div>
+      <button className="full" style={{ width: "100%", marginTop: 7 }} onClick={onAddText}>
+        Thêm lớp chữ
+      </button>
       <input
         ref={inputRef}
         type="file"

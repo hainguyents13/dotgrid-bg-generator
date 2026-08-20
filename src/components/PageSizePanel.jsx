@@ -1,8 +1,7 @@
 /** Khổ trang: chọn kiểu Web (pixel) hoặc In (mm + DPI), kích thước đổi theo kiểu. */
-import { clamp } from "../lib/color.js";
 import { grid } from "../lib/geometry.js";
 import { printPx, designSizeForPrint } from "../lib/page-size.js";
-import { Group, SelectRow } from "./controls.jsx";
+import { Group, SelectRow, NumberField } from "./controls.jsx";
 
 const WEB_PRESETS = [
   { value: "1080x1080", label: "Vuông 1080 x 1080" },
@@ -83,22 +82,18 @@ export default function PageSizePanel({ cfg, update, setMode }) {
           />
           <div className="row">
             <label htmlFor="printW">Khổ (mm)</label>
-            <input
-              type="number"
+            <NumberField
               id="printW"
-              min="10"
-              max="10000"
-              step="1"
+              min={10}
+              max={10000}
               value={cfg.printW}
-              onChange={(e) => updatePrint({ printW: clamp(Number(e.target.value) || 10, 10, 10000) })}
+              onChange={(printW) => updatePrint({ printW })}
             />
-            <input
-              type="number"
-              min="10"
-              max="10000"
-              step="1"
+            <NumberField
+              min={10}
+              max={10000}
               value={cfg.printH}
-              onChange={(e) => updatePrint({ printH: clamp(Number(e.target.value) || 10, 10, 10000) })}
+              onChange={(printH) => updatePrint({ printH })}
             />
           </div>
           <SelectRow
@@ -134,28 +129,18 @@ export default function PageSizePanel({ cfg, update, setMode }) {
           />
           <div className="row">
             <label htmlFor="canvasW">Rộng x Cao</label>
-            <input
-              type="number"
+            <NumberField
               id="canvasW"
-              min="16"
-              max="12000"
-              step="1"
+              min={16}
+              max={12000}
               value={cfg.w}
-              onChange={(e) => {
-                const w = clamp(Number(e.target.value) || 16, 16, 12000);
-                update({ w, webW: w });
-              }}
+              onChange={(w) => update({ w, webW: w })}
             />
-            <input
-              type="number"
-              min="16"
-              max="12000"
-              step="1"
+            <NumberField
+              min={16}
+              max={12000}
               value={cfg.h}
-              onChange={(e) => {
-                const h = clamp(Number(e.target.value) || 16, 16, 12000);
-                update({ h, webH: h });
-              }}
+              onChange={(h) => update({ h, webH: h })}
             />
           </div>
           <p className="hint">

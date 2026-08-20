@@ -1,8 +1,9 @@
 /** Trạng thái cấu hình, danh sách lớp và ghép các bảng điều khiển lại. */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_CONFIG, nextId, withLayerDefaults } from "./lib/config.js";
-import { attachImage, dropImage, hasImage } from "./lib/image-store.js";
+import { attachImage, dropImage, hasImage, setSource } from "./lib/image-store.js";
 import { layersFromFiles } from "./lib/file-input.js";
+import { makeTextLayer, isTextLayer, renderTextCanvas, textSignature } from "./lib/text-layer.js";
 import { saveConfig, loadConfig } from "./lib/storage.js";
 import { designSizeForPrint } from "./lib/page-size.js";
 import PageSizePanel from "./components/PageSizePanel.jsx";
@@ -65,9 +66,11 @@ export default function App() {
     if (!saved) return;
     let cancelled = false;
     (async () => {
-      await Promise.all(saved.layers.map((L) => attachImage(L)));
+      await Promise.all(saved.layers.filter((L) => !isTextLayer(L)).map(attachImage));
       if (cancelled) return;
-      const layers = saved.layers.filter((L) => hasImage(L.id)).map(withLayerDefaults);
+      const layers = saved.layers
+        .filter((L) => isTextLayer(L) || hasImage(L.id))
+        .map(withLayerDefaults);
       setCfg({ ...DEFAULT_CONFIG, ...saved, layers });
       if (layers.length) setSelectedId(layers[layers.length - 1].id);
       setRevision((n) => n + 1);
@@ -81,6 +84,27 @@ export default function App() {
     const id = setTimeout(() => saveConfig(cfg), 700);
     return () => clearTimeout(id);
   }, [cfg]);
+
+  const textKey = textSignature(cfg.layers);
+
+  /* Dựng lại canvas chữ mỗi khi nội dung hay kiểu chữ đổi, bỏ kết quả nếu đã có lượt mới hơn. */
+  useEffect(() => {
+    const texts = cfg.layers.filter(isTextLayer);
+    if (!texts.length) return undefined;
+    let alive = true;
+    (async () => {
+      const built = await Promise.all(
+        texts.map(async (L) => [L.id, await renderTextCanvas(L)])
+      );
+      if (!alive) return;
+      built.forEach(([id, canvas]) => setSource(id, canvas));
+      setRevision((n) => n + 1);
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textKey]);
 
   const handleAddFiles = useCallback(
     async (fileList) => {
@@ -122,10 +146,16 @@ export default function App() {
     }
   };
 
+  const addTextLayer = useCallback(() => {
+    const layer = makeTextLayer();
+    setCfg((c) => ({ ...c, layers: c.layers.concat(layer) }));
+    setSelectedId(layer.id);
+  }, []);
+
   const duplicateLayer = async () => {
     if (!selected) return;
     const copy = { ...selected, id: nextId(), name: selected.name + " bản sao" };
-    if (!(await attachImage(copy))) return;
+    if (!isTextLayer(copy) && !(await attachImage(copy))) return;
     setCfg((c) => {
       const layers = c.layers.slice();
       layers.splice(c.layers.findIndex((L) => L.id === selected.id) + 1, 0, copy);
@@ -156,6 +186,7 @@ export default function App() {
           layers={cfg.layers}
           selectedId={selectedId}
           onAddFiles={handleAddFiles}
+          onAddText={addTextLayer}
           {...layerHandlers}
         />
         <LayerControls

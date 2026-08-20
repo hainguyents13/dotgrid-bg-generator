@@ -115,13 +115,14 @@ input[type="color"] {
 input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
 input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 3px; }
 
-input[type="text"], input[type="number"], select {
+input[type="text"], input[type="number"], select, textarea {
   background: var(--panel-2); border: 1px solid var(--line-hi); color: var(--ink);
   border-radius: 5px; padding: 5px 7px; font-size: 12px;
   font-family: ui-monospace, "SF Mono", Menlo, monospace; min-width: 0; flex: 1;
 }
 select { font-family: inherit; }
-input:focus, select:focus { outline: none; border-color: var(--ink-mute); }
+textarea { resize: vertical; line-height: 1.4; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--ink-mute); }
 
 .check { display: flex; align-items: center; gap: 7px; font-size: 12.5px; cursor: pointer; user-select: none; }
 .check input { accent-color: var(--accent); width: 14px; height: 14px; }
@@ -172,6 +173,11 @@ button.icon.danger:hover { color: var(--accent); }
   width: 26px; height: 26px; flex: 0 0 auto; border-radius: 4px;
   background: repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 8px 8px;
   object-fit: contain; padding: 2px;
+}
+.layer .thumb-text {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--line); color: var(--ink-mute);
+  font-size: 12px; font-weight: 700; padding: 0;
 }
 .layer .lname {
   flex: 1; min-width: 0; font-size: 12px;

@@ -12,6 +12,12 @@ export function hasImage(id) {
   return images.has(id);
 }
 
+/** Gắn thẳng một nguồn đã dựng sẵn, dùng cho canvas chữ. */
+export function setSource(id, source) {
+  images.set(id, source);
+  masks.delete(id);
+}
+
 export function dropImage(id) {
   images.delete(id);
   masks.delete(id);
@@ -40,7 +46,11 @@ export function buildMask(c, layer, angle = 0) {
   const im = images.get(layer.id);
   if (!im) return null;
 
-  const key = [c.w, c.h, c.dotSize, c.gap, c.pad, layer.scale, layer.x, layer.y].join("|");
+  const key = [
+    c.w, c.h, c.dotSize, c.gap, c.pad,
+    layer.scale, layer.x, layer.y,
+    layer.text, layer.font, layer.weight
+  ].join("|");
   const cached = masks.get(layer.id);
   if (!angle && cached && cached.key === key) return cached.data;
 

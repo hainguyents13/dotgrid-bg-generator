@@ -1,6 +1,6 @@
 /** Các hàng điều khiển dùng lại trong bảng bên trái. */
-import { useId } from "react";
-import { normalizeHex } from "../lib/color.js";
+import { useEffect, useId, useState } from "react";
+import { clamp, normalizeHex } from "../lib/color.js";
 
 export function RangeRow({ label, value, min, max, step = 1, suffix = "", onChange }) {
   const id = useId();
@@ -18,6 +18,45 @@ export function RangeRow({ label, value, min, max, step = 1, suffix = "", onChan
       />
       <span className="val">{value + suffix}</span>
     </div>
+  );
+}
+
+/**
+ * Ô số cho phép xoá trống trong lúc gõ.
+ * Nếu ép giá trị hợp lệ ngay từng phím thì người dùng không xoá hết số cũ được.
+ */
+export function NumberField({ value, min, max, onChange, id }) {
+  const [draft, setDraft] = useState(String(value));
+
+  useEffect(() => {
+    setDraft(String(value));
+  }, [value]);
+
+  return (
+    <input
+      type="number"
+      id={id}
+      min={min}
+      max={max}
+      step="1"
+      value={draft}
+      onChange={(e) => {
+        const next = e.target.value;
+        setDraft(next);
+        const n = Number(next);
+        if (next !== "" && Number.isFinite(n) && n >= min && n <= max) onChange(n);
+      }}
+      onBlur={() => {
+        const n = Number(draft);
+        if (draft === "" || !Number.isFinite(n)) {
+          setDraft(String(value));
+          return;
+        }
+        const fixed = clamp(Math.round(n), min, max);
+        setDraft(String(fixed));
+        onChange(fixed);
+      }}
+    />
   );
 }
 
