@@ -2,7 +2,7 @@
 
 Trình tạo background lưới chấm vuông: xếp nhiều lớp hình vector lên lưới, chỉnh màu, ngưỡng, nhiễu rồi xuất PNG, SVG (kể cả SVG khổ in theo mm) hoặc CSS lặp vô hạn.
 
-Bản React (Vite) chuyển từ file `background-generator.html` một trang ban đầu.
+Bản React (Vite), chuyển từ một file HTML đơn ban đầu.
 
 ## Chạy tại máy
 
