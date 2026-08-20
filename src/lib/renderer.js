@@ -27,7 +27,7 @@ export function eachDot(c, cb, angles = null) {
       col: hexToRgb(L.color) || { r: 232, g: 50, b: 45 },
       thr: L.threshold / 100,
       soft: L.soft / 100 + 0.001,
-      gain: L.bright / 100,
+      alpha: (L.alpha ?? 100) / 100,
       salt: (k + 1) * 977
     });
   });
@@ -60,14 +60,11 @@ export function eachDot(c, cb, angles = null) {
           const nn = (rand(i + it.salt, j + it.salt, c.seed) - 0.5) * (it.L.noise / 100) * 1.4;
           m = clamp(m + nn, 0, 1);
         }
+        m *= it.alpha;
         if (m > 0) {
           let target = it.col;
           if (it.L.tint > 0) {
-            const src = {
-              r: clamp(d[p] * it.gain, 0, 255),
-              g: clamp(d[p + 1] * it.gain, 0, 255),
-              b: clamp(d[p + 2] * it.gain, 0, 255)
-            };
+            const src = { r: d[p], g: d[p + 1], b: d[p + 2] };
             target = it.L.tint >= 100 ? src : mix(it.col, src, it.L.tint / 100);
           }
           col = mix(col, mix(bg, target, c.opacity / 100), m);
@@ -98,6 +95,7 @@ function drawSolid(g2, c, angles) {
     if (!art) return;
     const angle = angles ? angles[L.id] || 0 : 0;
     g2.save();
+    g2.globalAlpha = (L.alpha ?? 100) / 100;
     if (c.clipOutside) {
       framePath(g2, innerBox(c), frameR(c));
       g2.clip();
@@ -163,11 +161,14 @@ export function buildSvg(c, widthAttr, heightAttr) {
   eachSolid(c, (L, rect) => {
     const art = getTinted(L.id, L.color);
     if (!art) return;
+    const alpha = (L.alpha ?? 100) / 100;
+    if (alpha <= 0) return;
     overlay +=
       '<image href="' + art.toDataURL("image/png") +
       '" x="' + rect.dx.toFixed(1) + '" y="' + rect.dy.toFixed(1) +
       '" width="' + rect.dw.toFixed(1) + '" height="' + rect.dh.toFixed(1) +
-      '" preserveAspectRatio="none"/>';
+      '"' + (alpha < 1 ? ' opacity="' + alpha.toFixed(2) + '"' : "") +
+      ' preserveAspectRatio="none"/>';
   });
   if (overlay && c.clipOutside) {
     overlay =

@@ -37,7 +37,8 @@ export const LAYER_DEFAULTS = {
   visible: true,
   color: "#e8322d",
   tint: 100,
-  bright: 100,
+  /* Phần trăm hiện rõ của lớp, 0 là mất hẳn. */
+  alpha: 100,
   scale: 80,
   x: 0,
   y: 0,
