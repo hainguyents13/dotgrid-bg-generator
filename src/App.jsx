@@ -9,7 +9,6 @@ import PageSizePanel from "./components/PageSizePanel.jsx";
 import DotsPanel from "./components/DotsPanel.jsx";
 import LayersPanel from "./components/LayersPanel.jsx";
 import LayerControls from "./components/LayerControls.jsx";
-import WavePanel from "./components/WavePanel.jsx";
 import ExportPanel from "./components/ExportPanel.jsx";
 import CanvasStage from "./components/CanvasStage.jsx";
 
@@ -145,7 +144,6 @@ export default function App() {
         </div>
         <PageSizePanel cfg={cfg} update={update} setMode={setMode} />
         <DotsPanel cfg={cfg} update={update} />
-        <WavePanel cfg={cfg} update={update} />
         <ExportPanel cfg={cfg} toast={toast} />
       </aside>
 

@@ -1,6 +1,6 @@
 /** Nhân dựng hình: duyệt từng chấm, vẽ ra canvas và sinh SVG hoặc CSS. */
 import { hexToRgb, rgbToHex, mix, clamp } from "./color.js";
-import { grid, innerBox, frameR, pointInFrame, framePath, waveYAt, rand } from "./geometry.js";
+import { grid, innerBox, frameR, pointInFrame, framePath, rand } from "./geometry.js";
 import { buildMask } from "./image-store.js";
 
 /** Duyệt mọi chấm trong lưới và gọi cb với toạ độ cùng màu cuối cùng. */
@@ -10,9 +10,7 @@ export function eachDot(c, cb) {
   const fr = frameR(c);
   const bg = hexToRgb(c.bg) || { r: 13, g: 13, b: 13 };
   const dot = hexToRgb(c.dot) || { r: 31, g: 31, b: 31 };
-  const acc = hexToRgb(c.wave) || { r: 232, g: 50, b: 45 };
   const base = mix(bg, dot, c.opacity / 100);
-  const feather = (c.waveFeather / 100) * c.h * 0.35 + 1;
 
   const active = [];
   c.layers.forEach((L, k) => {
@@ -47,16 +45,6 @@ export function eachDot(c, cb) {
       }
 
       let col = base;
-
-      if (c.waveOn) {
-        const wy = waveYAt(x + c.dotSize / 2, c);
-        let t = clamp((y + c.dotSize / 2 - wy) / feather, 0, 1);
-        if (t > 0 && t < 1) {
-          const n = (rand(i, j, c.seed) - 0.5) * (c.waveNoise / 100) * 1.6;
-          t = clamp(t + n * (1 - Math.abs(t - 0.5) * 0.6), 0, 1);
-        }
-        if (t > 0) col = mix(col, mix(bg, acc, c.opacity / 100), t * t);
-      }
 
       const p = (j * g.cols + i) * 4;
       for (let a = 0; a < active.length; a++) {

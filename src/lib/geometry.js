@@ -75,18 +75,3 @@ export function fitRect(c, layer, iw, ih) {
     dh
   };
 }
-
-export function waveYAt(x, c) {
-  const base = c.h * (1 - c.waveHeight / 100);
-  const amp = (c.waveAmp / 100) * c.h * 0.5;
-  const s = c.seed;
-  const f1 = ((0.9 + rand(1, 1, s) * 1.4) * Math.PI * 2) / c.w;
-  const f2 = ((2.2 + rand(2, 2, s) * 2.6) * Math.PI * 2) / c.w;
-  const f3 = ((4.5 + rand(3, 3, s) * 3.0) * Math.PI * 2) / c.w;
-  const p1 = rand(4, 4, s) * 10;
-  const p2 = rand(5, 5, s) * 10;
-  const p3 = rand(6, 6, s) * 10;
-  const v =
-    Math.sin(x * f1 + p1) * 0.55 + Math.sin(x * f2 + p2) * 0.3 + Math.sin(x * f3 + p3) * 0.15;
-  return base - v * amp;
-}

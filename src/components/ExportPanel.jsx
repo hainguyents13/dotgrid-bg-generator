@@ -38,8 +38,8 @@ export default function ExportPanel({ cfg, toast }) {
         </button>
       </div>
       <p className="hint">
-        CSS lặp chỉ gồm nền và chấm đều, không kèm hình hay vệt sáng. Muốn giữ hình thì bạn xuất PNG
-        hoặc SVG nhé.
+        CSS lặp chỉ gồm nền và chấm đều, không kèm các lớp hình. Muốn giữ hình thì bạn xuất PNG hoặc
+        SVG nhé.
       </p>
     </Group>
   );

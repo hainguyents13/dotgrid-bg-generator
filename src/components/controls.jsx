@@ -69,15 +69,6 @@ export function CheckRow({ label, checked, onChange }) {
   );
 }
 
-export function Switch({ checked, onChange }) {
-  return (
-    <label className="switch">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="track" />
-    </label>
-  );
-}
-
 export function Group({ title, extra, children, className = "" }) {
   return (
     <div className={"group " + className}>

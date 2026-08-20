@@ -17,12 +17,7 @@ export const DEFAULT_CONFIG = {
   pad: 0,
   frameRadius: 0,
   clipOutside: false,
-  waveOn: true,
-  wave: "#e8322d",
-  waveHeight: 30,
-  waveAmp: 14,
-  waveFeather: 18,
-  waveNoise: 55,
+  /* Hạt giống cho nhiễu viền của từng lớp hình. */
   seed: 7,
   printW: 600,
   printH: 1600,
