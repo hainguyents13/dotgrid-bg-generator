@@ -1,0 +1,1477 @@
+<div id="app">
+  <style>
+    #app {
+      --bg: #0a0a0a;
+      --panel: #131313;
+      --panel-2: #191919;
+      --line: #272727;
+      --line-hi: #3a3a3a;
+      --ink: #ededed;
+      --ink-mute: #8b8b8b;
+      --accent: #e8322d;
+      --radius: 8px;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      min-height: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    #app *, #app *::before, #app *::after { box-sizing: border-box; }
+
+    .wrap {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+      max-width: 1340px;
+      margin: 0 auto;
+    }
+    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+
+    .head { margin: 0 0 18px; }
+    .head h1 { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 4px; }
+    .head p { margin: 0; font-size: 12.5px; color: var(--ink-mute); }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+    }
+    @media (max-width: 900px) { .panel { max-height: none; } }
+
+    .group { padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .group:first-child { padding-top: 0; }
+    .group:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .group-title {
+      font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.09em;
+      color: var(--ink-mute); margin: 0 0 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .row:last-child { margin-bottom: 0; }
+    .row label { font-size: 12.5px; flex: 0 0 96px; color: var(--ink); }
+    .row .val {
+      font-size: 11.5px; color: var(--ink-mute);
+      font-variant-numeric: tabular-nums; flex: 0 0 42px; text-align: right;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      flex: 1; height: 3px; min-width: 0;
+      background: var(--line-hi); border-radius: 2px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: var(--ink); cursor: pointer; border: 0;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 13px; height: 13px; border-radius: 50%;
+      background: var(--ink); cursor: pointer; border: 0;
+    }
+    input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+    input[type="color"] {
+      -webkit-appearance: none; appearance: none;
+      width: 30px; height: 26px; padding: 0;
+      border: 1px solid var(--line-hi); border-radius: 5px;
+      background: none; cursor: pointer; flex: 0 0 auto;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+    input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 3px; }
+
+    input[type="text"], input[type="number"], select {
+      background: var(--panel-2); border: 1px solid var(--line-hi); color: var(--ink);
+      border-radius: 5px; padding: 5px 7px; font-size: 12px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace; min-width: 0; flex: 1;
+    }
+    select { font-family: inherit; }
+    input:focus, select:focus { outline: none; border-color: var(--ink-mute); }
+
+    .switch { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
+    .switch input { position: absolute; opacity: 0; pointer-events: none; }
+    .track {
+      width: 30px; height: 17px; border-radius: 9px; background: var(--line-hi);
+      position: relative; transition: background 0.15s; flex: 0 0 auto;
+    }
+    .track::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #d0d0d0; transition: transform 0.15s;
+    }
+    .switch input:checked + .track { background: var(--accent); }
+    .switch input:checked + .track::after { transform: translateX(13px); background: #fff; }
+
+    .check { display: flex; align-items: center; gap: 7px; font-size: 12.5px; cursor: pointer; user-select: none; }
+    .check input { accent-color: var(--accent); width: 14px; height: 14px; }
+
+    button {
+      font-family: inherit; font-size: 12.5px; color: var(--ink);
+      background: var(--panel-2); border: 1px solid var(--line-hi);
+      border-radius: 6px; padding: 8px 10px; cursor: pointer;
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
+    }
+    button:hover { border-color: var(--ink-mute); background: #1f1f1f; }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.35; cursor: default; }
+    button:disabled:hover { border-color: var(--line-hi); background: var(--panel-2); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 550; }
+    button.primary:hover { background: #f5423d; border-color: #f5423d; }
+    button.mini { padding: 4px 8px; font-size: 11px; }
+    button.icon {
+      padding: 0; width: 24px; height: 24px; flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; line-height: 1; background: none; border-color: transparent;
+      color: var(--ink-mute);
+    }
+    button.icon:hover { color: var(--ink); background: #232323; border-color: transparent; }
+    button.icon.danger:hover { color: var(--accent); }
+
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .btn-grid .full { grid-column: 1 / -1; }
+
+    .drop {
+      border: 1px dashed var(--line-hi); border-radius: 6px;
+      padding: 12px 10px; text-align: center; font-size: 12px;
+      color: var(--ink-mute); cursor: pointer;
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .drop:hover, .drop.over { border-color: var(--accent); color: var(--ink); }
+
+    .layers { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+    .layer {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 6px; border-radius: 6px;
+      border: 1px solid transparent; background: var(--panel-2);
+      cursor: pointer;
+    }
+    .layer:hover { border-color: var(--line-hi); }
+    .layer.sel { border-color: var(--accent); }
+    .layer .thumb {
+      width: 26px; height: 26px; flex: 0 0 auto; border-radius: 4px;
+      background: repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 8px 8px;
+      object-fit: contain; padding: 2px;
+    }
+    .layer .lname {
+      flex: 1; min-width: 0; font-size: 12px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .layer.off .lname, .layer.off .thumb { opacity: 0.4; }
+    .empty { font-size: 12px; color: var(--ink-mute); text-align: center; padding: 6px 0 10px; }
+
+    .stage {
+      background: repeating-conic-gradient(#1c1c1c 0% 25%, #151515 0% 50%) 50% / 16px 16px;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 20px; display: flex; align-items: center; justify-content: center;
+      min-height: 420px;
+    }
+    .stage.over { border-color: var(--accent); }
+    #preview { max-width: 100%; max-height: 68vh; display: block; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+
+    .meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 10px; font-size: 11.5px; color: var(--ink-mute);
+      font-variant-numeric: tabular-nums; gap: 12px; flex-wrap: wrap;
+    }
+    .toast { color: var(--accent); opacity: 0; transition: opacity 0.2s; }
+    .toast.show { opacity: 1; }
+    .hint { font-size: 11.5px; color: var(--ink-mute); margin: 8px 0 0; }
+    .disabled-block { opacity: 0.4; pointer-events: none; }
+    .hidden { display: none; }
+  </style>
+
+  <div class="head">
+    <h1>Trình tạo background chấm vuông</h1>
+    <p>Thả nhiều file vector vào, xếp lớp và chỉnh riêng từng hình, rồi xuất PNG, SVG hoặc lấy CSS.</p>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+
+      <div class="group">
+        <p class="group-title">Khổ ảnh</p>
+        <div class="row">
+          <label for="preset">Kích thước</label>
+          <select id="preset">
+            <option value="1080x1080">Vuông 1080 x 1080</option>
+            <option value="1920x1080">Ngang 1920 x 1080</option>
+            <option value="1200x630">OG image 1200 x 630</option>
+            <option value="1080x1350">Dọc 1080 x 1350</option>
+            <option value="1080x1920">Story 1080 x 1920</option>
+            <option value="800x2000">Standee 800 x 2000</option>
+            <option value="custom">Tuỳ chỉnh</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="w">Rộng x Cao</label>
+          <input type="number" id="w" min="16" max="12000" step="1">
+          <input type="number" id="h" min="16" max="12000" step="1">
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-title">Khổ in thật</p>
+        <div class="row">
+          <label for="pw">Khổ (mm)</label>
+          <input type="number" id="pw" min="10" max="10000" step="1">
+          <input type="number" id="ph" min="10" max="10000" step="1">
+        </div>
+        <div class="row">
+          <label for="dpi">Mật độ in</label>
+          <select id="dpi">
+            <option value="72">72 DPI, xem màn hình</option>
+            <option value="100">100 DPI, bạt lớn nhìn xa</option>
+            <option value="150">150 DPI, standee, poster</option>
+            <option value="200">200 DPI, in gần</option>
+            <option value="300">300 DPI, in offset</option>
+          </select>
+        </div>
+        <p class="hint" id="printInfo"></p>
+        <div class="btn-grid" style="margin-top:10px">
+          <button class="full" id="matchRatio">Đặt khung thiết kế theo tỉ lệ khổ in</button>
+          <button id="dlPrintPng">PNG khổ in</button>
+          <button class="primary" id="dlPrintSvg">SVG khổ in</button>
+        </div>
+        <p class="hint">SVG mang sẵn đơn vị mm nên nhà in mở ra là đúng khổ, không phụ thuộc số pixel. Đây là lựa chọn nên dùng cho standee.</p>
+      </div>
+
+      <div class="group">
+        <p class="group-title">Nền và chấm</p>
+        <div class="row">
+          <label for="bgColor">Màu nền</label>
+          <input type="color" id="bgColor">
+          <input type="text" id="bgHex" spellcheck="false">
+        </div>
+        <div class="row">
+          <label for="dotColor">Màu chấm</label>
+          <input type="color" id="dotColor">
+          <input type="text" id="dotHex" spellcheck="false">
+        </div>
+        <div class="row">
+          <label for="dotSize">Cỡ chấm</label>
+          <input type="range" id="dotSize" min="1" max="24" step="1">
+          <span class="val" id="dotSizeVal"></span>
+        </div>
+        <div class="row">
+          <label for="gap">Khoảng cách</label>
+          <input type="range" id="gap" min="1" max="48" step="1">
+          <span class="val" id="gapVal"></span>
+        </div>
+        <div class="row">
+          <label for="radius">Bo góc chấm</label>
+          <input type="range" id="radius" min="0" max="50" step="1">
+          <span class="val" id="radiusVal"></span>
+        </div>
+        <div class="row">
+          <label for="opacity">Độ đậm</label>
+          <input type="range" id="opacity" min="5" max="100" step="1">
+          <span class="val" id="opacityVal"></span>
+        </div>
+        <div class="row">
+          <label for="pad">Lề trong</label>
+          <input type="range" id="pad" min="0" max="300" step="1">
+          <span class="val" id="padVal"></span>
+        </div>
+        <div class="row">
+          <label for="frameRadius">Bo góc khung</label>
+          <input type="range" id="frameRadius" min="0" max="400" step="1">
+          <span class="val" id="frameRadiusVal"></span>
+        </div>
+        <div class="row">
+          <label style="flex:1">
+            <span class="check"><input type="checkbox" id="clipOutside"> Nền trong suốt ngoài khung</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-title">
+          <span>Các lớp hình</span>
+          <span id="layerCount" style="text-transform:none;letter-spacing:0"></span>
+        </p>
+        <div class="layers" id="layerList"></div>
+        <div id="dropZone" class="drop">Kéo file SVG hoặc PNG vào đây, hoặc bấm để chọn</div>
+        <input type="file" id="fileInput" class="hidden" multiple accept=".svg,image/svg+xml,image/png,image/jpeg,image/webp">
+        <p class="hint" id="listHint">Lớp nằm trên trong danh sách sẽ đè lên lớp bên dưới. Bấm vào một lớp để chỉnh riêng nó.</p>
+      </div>
+
+      <div class="group hidden" id="layerPanel">
+        <p class="group-title"><span id="layerTitle">Chỉnh lớp</span></p>
+        <div class="row">
+          <label for="lColorPick">Màu hình</label>
+          <input type="color" id="lColorPick">
+          <input type="text" id="lColorHex" spellcheck="false">
+        </div>
+        <div class="row">
+          <label for="lTint">Giữ màu gốc</label>
+          <input type="range" id="lTint" min="0" max="100" step="1">
+          <span class="val" id="lTintVal"></span>
+        </div>
+        <div class="row">
+          <label for="lBright">Độ sáng màu</label>
+          <input type="range" id="lBright" min="30" max="250" step="1">
+          <span class="val" id="lBrightVal"></span>
+        </div>
+        <div class="row">
+          <label for="lFit">Cách đặt</label>
+          <select id="lFit">
+            <option value="contain">Vừa khung</option>
+            <option value="cover">Phủ kín khung</option>
+            <option value="stretch">Kéo giãn</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="lScale">Phóng to</label>
+          <input type="range" id="lScale" min="5" max="300" step="1">
+          <span class="val" id="lScaleVal"></span>
+        </div>
+        <div class="row">
+          <label for="lX">Dời ngang</label>
+          <input type="range" id="lX" min="-100" max="100" step="1">
+          <span class="val" id="lXVal"></span>
+        </div>
+        <div class="row">
+          <label for="lY">Dời dọc</label>
+          <input type="range" id="lY" min="-100" max="100" step="1">
+          <span class="val" id="lYVal"></span>
+        </div>
+        <div class="row">
+          <label for="lSource">Bám theo</label>
+          <select id="lSource">
+            <option value="alpha">Vùng có hình</option>
+            <option value="lum">Độ sáng</option>
+          </select>
+        </div>
+        <div class="row">
+          <label style="flex:1">
+            <span class="check"><input type="checkbox" id="lInvert"> Đảo ngược vùng chấm</span>
+          </label>
+        </div>
+        <div class="row">
+          <label for="lThreshold">Ngưỡng</label>
+          <input type="range" id="lThreshold" min="0" max="100" step="1">
+          <span class="val" id="lThresholdVal"></span>
+        </div>
+        <div class="row">
+          <label for="lSoft">Độ chuyển</label>
+          <input type="range" id="lSoft" min="0" max="100" step="1">
+          <span class="val" id="lSoftVal"></span>
+        </div>
+        <div class="row">
+          <label for="lNoise">Độ nhiễu</label>
+          <input type="range" id="lNoise" min="0" max="100" step="1">
+          <span class="val" id="lNoiseVal"></span>
+        </div>
+        <div class="btn-grid" style="margin-top:10px">
+          <button id="lReset">Về giữa khung</button>
+          <button id="lDuplicate">Nhân đôi lớp</button>
+        </div>
+        <p class="hint">Kéo thẳng hình trên khung xem trước để dời lớp đang chọn. Giữ Alt rồi lăn chuột để phóng to thu nhỏ, bấm đúp để đưa về giữa.</p>
+      </div>
+
+      <div class="group">
+        <p class="group-title">
+          <span>Vệt sáng dưới đáy</span>
+          <label class="switch" for="waveOn">
+            <input type="checkbox" id="waveOn">
+            <span class="track"></span>
+          </label>
+        </p>
+        <div id="waveBlock">
+          <div class="row">
+            <label for="waveColor">Màu nhấn</label>
+            <input type="color" id="waveColor">
+            <input type="text" id="waveHex" spellcheck="false">
+          </div>
+          <div class="row">
+            <label for="waveHeight">Chiều cao</label>
+            <input type="range" id="waveHeight" min="5" max="90" step="1">
+            <span class="val" id="waveHeightVal"></span>
+          </div>
+          <div class="row">
+            <label for="waveAmp">Độ nhấp nhô</label>
+            <input type="range" id="waveAmp" min="0" max="40" step="1">
+            <span class="val" id="waveAmpVal"></span>
+          </div>
+          <div class="row">
+            <label for="waveFeather">Độ chuyển</label>
+            <input type="range" id="waveFeather" min="0" max="60" step="1">
+            <span class="val" id="waveFeatherVal"></span>
+          </div>
+          <div class="row">
+            <label for="waveNoise">Độ nhiễu</label>
+            <input type="range" id="waveNoise" min="0" max="100" step="1">
+            <span class="val" id="waveNoiseVal"></span>
+          </div>
+          <div class="row">
+            <label>Dáng vệt</label>
+            <button class="mini" id="reseed" style="flex:1">Đổi dáng ngẫu nhiên</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-title">Xuất file</p>
+        <div class="btn-grid">
+          <button class="primary full" id="dlPng">Tải PNG</button>
+          <button id="dlPng2x">PNG @2x</button>
+          <button id="dlSvg">Tải SVG</button>
+          <button class="full" id="copyCss">Sao chép CSS lặp vô hạn</button>
+        </div>
+        <p class="hint">CSS lặp chỉ gồm nền và chấm đều, không kèm hình hay vệt sáng. Muốn giữ hình thì bạn xuất PNG hoặc SVG nhé.</p>
+      </div>
+
+    </div>
+
+    <div>
+      <div class="stage" id="stage">
+        <canvas id="preview"></canvas>
+      </div>
+      <div class="meta">
+        <span id="info"></span>
+        <span class="toast" id="toast"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+
+  var cfg = {
+    w: 1080, h: 1080,
+    bg: "#0d0d0d",
+    dot: "#1f1f1f",
+    dotSize: 4,
+    gap: 7,
+    radius: 0,
+    opacity: 100,
+    pad: 0,
+    frameRadius: 0,
+    clipOutside: false,
+    waveOn: true,
+    wave: "#e8322d",
+    waveHeight: 30,
+    waveAmp: 14,
+    waveFeather: 18,
+    waveNoise: 55,
+    seed: 7,
+    printW: 600,
+    printH: 1600,
+    dpi: 150,
+    layers: []
+  };
+
+  var canvas = $("preview");
+  var images = {};
+  var masks = {};
+  var selectedId = null;
+  var uid = 0;
+
+  /* ---------- helpers ---------- */
+  function hexToRgb(hex) {
+    var h = String(hex).replace("#", "").trim();
+    if (h.length === 3) h = h.split("").map(function (c) { return c + c; }).join("");
+    var n = parseInt(h, 16);
+    if (isNaN(n) || h.length !== 6) return null;
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  function rgbToHex(r, g, b) {
+    return "#" + [r, g, b].map(function (v) {
+      return Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0");
+    }).join("");
+  }
+  function mix(a, b, t) {
+    return { r: a.r + (b.r - a.r) * t, g: a.g + (b.g - a.g) * t, b: a.b + (b.b - a.b) * t };
+  }
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+  function rand(x, y, seed) {
+    var s = Math.sin(x * 127.1 + y * 311.7 + seed * 74.7) * 43758.5453;
+    return s - Math.floor(s);
+  }
+  function nextId() { uid += 1; return "L" + Date.now().toString(36) + uid; }
+
+  function innerBox(c) {
+    var p = Math.min(c.pad, Math.floor(Math.min(c.w, c.h) / 2) - 1);
+    p = Math.max(0, p);
+    return { x: p, y: p, w: Math.max(1, c.w - 2 * p), h: Math.max(1, c.h - 2 * p) };
+  }
+
+  function frameR(c) {
+    var b = innerBox(c);
+    return clamp(c.frameRadius, 0, Math.min(b.w, b.h) / 2);
+  }
+
+  function pointInFrame(px, py, b, r) {
+    if (px < b.x || py < b.y || px > b.x + b.w || py > b.y + b.h) return false;
+    if (r <= 0) return true;
+    var cx = px < b.x + r ? b.x + r : (px > b.x + b.w - r ? b.x + b.w - r : px);
+    var cy = py < b.y + r ? b.y + r : (py > b.y + b.h - r ? b.y + b.h - r : py);
+    if (cx === px || cy === py) return true;
+    var dx = px - cx, dy = py - cy;
+    return dx * dx + dy * dy <= r * r;
+  }
+
+  function framePath(g2, b, r) {
+    if (g2.roundRect) {
+      g2.beginPath();
+      g2.roundRect(b.x, b.y, b.w, b.h, r);
+    } else {
+      g2.beginPath();
+      g2.rect(b.x, b.y, b.w, b.h);
+    }
+  }
+
+  function grid(c) {
+    var pitch = c.dotSize + c.gap;
+    var b = innerBox(c);
+    var cols = Math.max(1, Math.floor((b.w + c.gap) / pitch));
+    var rows = Math.max(1, Math.floor((b.h + c.gap) / pitch));
+    return {
+      pitch: pitch, cols: cols, rows: rows,
+      offX: b.x + (b.w - (cols * pitch - c.gap)) / 2,
+      offY: b.y + (b.h - (rows * pitch - c.gap)) / 2
+    };
+  }
+
+  function waveYAt(x, c) {
+    var base = c.h * (1 - c.waveHeight / 100);
+    var amp = (c.waveAmp / 100) * c.h * 0.5;
+    var s = c.seed;
+    var f1 = (0.9 + rand(1, 1, s) * 1.4) * Math.PI * 2 / c.w;
+    var f2 = (2.2 + rand(2, 2, s) * 2.6) * Math.PI * 2 / c.w;
+    var f3 = (4.5 + rand(3, 3, s) * 3.0) * Math.PI * 2 / c.w;
+    var p1 = rand(4, 4, s) * 10, p2 = rand(5, 5, s) * 10, p3 = rand(6, 6, s) * 10;
+    var v = Math.sin(x * f1 + p1) * 0.55 + Math.sin(x * f2 + p2) * 0.3 + Math.sin(x * f3 + p3) * 0.15;
+    return base - v * amp;
+  }
+
+  /* ---------- layers ---------- */
+  function makeLayer(name, src) {
+    return {
+      id: nextId(),
+      name: name,
+      src: src,
+      visible: true,
+      color: "#e8322d",
+      tint: 100,
+      bright: 100,
+      fit: "contain",
+      scale: 80,
+      x: 0,
+      y: 0,
+      source: "alpha",
+      invert: false,
+      threshold: 30,
+      soft: 25,
+      noise: 40
+    };
+  }
+
+  function selected() {
+    for (var i = 0; i < cfg.layers.length; i++) {
+      if (cfg.layers[i].id === selectedId) return cfg.layers[i];
+    }
+    return null;
+  }
+  function indexOfId(id) {
+    for (var i = 0; i < cfg.layers.length; i++) if (cfg.layers[i].id === id) return i;
+    return -1;
+  }
+
+  function fitRect(c, L, iw, ih) {
+    var b = innerBox(c);
+    var s = L.scale / 100, dw, dh, k;
+    if (L.fit === "cover") { k = Math.max(b.w / iw, b.h / ih); dw = iw * k; dh = ih * k; }
+    else if (L.fit === "stretch") { dw = b.w; dh = b.h; }
+    else { k = Math.min(b.w / iw, b.h / ih); dw = iw * k; dh = ih * k; }
+    dw *= s; dh *= s;
+    return {
+      dx: b.x + (b.w - dw) / 2 + (L.x / 100) * b.w,
+      dy: b.y + (b.h - dh) / 2 + (L.y / 100) * b.h,
+      dw: dw, dh: dh
+    };
+  }
+
+  function buildMask(c, L) {
+    var im = images[L.id];
+    if (!im) return null;
+    var g = grid(c);
+    var key = [c.w, c.h, c.dotSize, c.gap, L.fit, L.scale, L.x, L.y].join("|");
+    var cached = masks[L.id];
+    if (cached && cached.key === key) return cached.data;
+
+    var iw = im.naturalWidth || im.width || 1;
+    var ih = im.naturalHeight || im.height || 1;
+    var r = fitRect(c, L, iw, ih);
+
+    var cv = document.createElement("canvas");
+    cv.width = g.cols;
+    cv.height = g.rows;
+    var mx = cv.getContext("2d", { willReadFrequently: true });
+    mx.imageSmoothingEnabled = true;
+    mx.imageSmoothingQuality = "high";
+    try {
+      mx.drawImage(im,
+        (r.dx - g.offX) / g.pitch,
+        (r.dy - g.offY) / g.pitch,
+        r.dw / g.pitch,
+        r.dh / g.pitch
+      );
+      var data = mx.getImageData(0, 0, g.cols, g.rows);
+      masks[L.id] = { key: key, data: data };
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ---------- core ---------- */
+  function eachDot(c, cb) {
+    var g = grid(c);
+    var box = innerBox(c);
+    var fr = frameR(c);
+    var bg = hexToRgb(c.bg) || { r: 13, g: 13, b: 13 };
+    var dot = hexToRgb(c.dot) || { r: 31, g: 31, b: 31 };
+    var acc = hexToRgb(c.wave) || { r: 232, g: 50, b: 45 };
+    var base = mix(bg, dot, c.opacity / 100);
+    var feather = (c.waveFeather / 100) * c.h * 0.35 + 1;
+
+    var active = [];
+    for (var k = 0; k < c.layers.length; k++) {
+      var L = c.layers[k];
+      if (!L.visible) continue;
+      var data = buildMask(c, L);
+      if (!data) continue;
+      active.push({
+        L: L,
+        data: data.data,
+        col: hexToRgb(L.color) || { r: 232, g: 50, b: 45 },
+        thr: L.threshold / 100,
+        soft: L.soft / 100 + 0.001,
+        gain: L.bright / 100,
+        salt: (k + 1) * 977
+      });
+    }
+
+    for (var j = 0; j < g.rows; j++) {
+      for (var i = 0; i < g.cols; i++) {
+        var x = g.offX + i * g.pitch;
+        var y = g.offY + j * g.pitch;
+        if (fr > 0) {
+          var s = c.dotSize;
+          if (!pointInFrame(x, y, box, fr) ||
+              !pointInFrame(x + s, y, box, fr) ||
+              !pointInFrame(x, y + s, box, fr) ||
+              !pointInFrame(x + s, y + s, box, fr)) continue;
+        }
+
+        var col = base;
+
+        if (c.waveOn) {
+          var wy = waveYAt(x + c.dotSize / 2, c);
+          var t = clamp((y + c.dotSize / 2 - wy) / feather, 0, 1);
+          if (t > 0 && t < 1) {
+            var n = (rand(i, j, c.seed) - 0.5) * (c.waveNoise / 100) * 1.6;
+            t = clamp(t + n * (1 - Math.abs(t - 0.5) * 0.6), 0, 1);
+          }
+          if (t > 0) col = mix(col, mix(bg, acc, c.opacity / 100), t * t);
+        }
+
+        var p = (j * g.cols + i) * 4;
+        for (var a = 0; a < active.length; a++) {
+          var it = active[a];
+          var d = it.data;
+          var alpha = d[p + 3] / 255;
+          var cov;
+          if (it.L.source === "lum") {
+            cov = ((0.299 * d[p] + 0.587 * d[p + 1] + 0.114 * d[p + 2]) / 255) * alpha;
+          } else {
+            cov = alpha;
+          }
+          if (it.L.invert) cov = 1 - cov;
+          var m = clamp((cov - it.thr) / it.soft, 0, 1);
+          if (m > 0 && m < 1 && it.L.noise > 0) {
+            var nn = (rand(i + it.salt, j + it.salt, c.seed) - 0.5) * (it.L.noise / 100) * 1.4;
+            m = clamp(m + nn, 0, 1);
+          }
+          if (m > 0) {
+            var target = it.col;
+            if (it.L.tint > 0) {
+              var src = {
+                r: clamp(d[p] * it.gain, 0, 255),
+                g: clamp(d[p + 1] * it.gain, 0, 255),
+                b: clamp(d[p + 2] * it.gain, 0, 255)
+              };
+              target = it.L.tint >= 100 ? src : mix(it.col, src, it.L.tint / 100);
+            }
+            col = mix(col, mix(bg, target, c.opacity / 100), m);
+          }
+        }
+
+        cb(x, y, rgbToHex(col.r, col.g, col.b));
+      }
+    }
+  }
+
+  function drawTo(target, c, scale) {
+    var g2 = target.getContext("2d");
+    target.width = Math.round(c.w * scale);
+    target.height = Math.round(c.h * scale);
+    g2.setTransform(scale, 0, 0, scale, 0, 0);
+    g2.fillStyle = c.bg;
+    if (c.clipOutside) {
+      framePath(g2, innerBox(c), frameR(c));
+      g2.fill();
+    } else {
+      g2.fillRect(0, 0, c.w, c.h);
+    }
+    var r = (c.radius / 100) * c.dotSize;
+    eachDot(c, function (x, y, color) {
+      g2.fillStyle = color;
+      if (r > 0.2 && g2.roundRect) {
+        g2.beginPath();
+        g2.roundRect(x, y, c.dotSize, c.dotSize, r);
+        g2.fill();
+      } else {
+        g2.fillRect(x, y, c.dotSize, c.dotSize);
+      }
+    });
+    g2.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  function render() {
+    drawTo(canvas, cfg, 1);
+    var g = grid(cfg);
+    $("info").textContent = cfg.w + " x " + cfg.h + " px  ·  bước lưới " + g.pitch + "px  ·  " +
+      (Math.ceil(cfg.w / g.pitch) * Math.ceil(cfg.h / g.pitch)).toLocaleString("vi-VN") + " chấm";
+    updatePrintInfo();
+    save();
+  }
+
+  var rafPending = false;
+  function scheduleRender() {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(function () { rafPending = false; render(); });
+  }
+
+  /* ---------- file input ---------- */
+  function ensureSvgSize(text) {
+    try {
+      var doc = new DOMParser().parseFromString(text, "image/svg+xml");
+      var svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg") return text;
+      var wAttr = svg.getAttribute("width");
+      var hAttr = svg.getAttribute("height");
+      var vb = svg.getAttribute("viewBox");
+      var needW = !wAttr || wAttr.indexOf("%") >= 0;
+      var needH = !hAttr || hAttr.indexOf("%") >= 0;
+      if ((needW || needH) && vb) {
+        var p = vb.trim().split(/[\s,]+/).map(Number);
+        if (p.length === 4 && p[2] > 0 && p[3] > 0) {
+          svg.setAttribute("width", p[2]);
+          svg.setAttribute("height", p[3]);
+        }
+      }
+      return new XMLSerializer().serializeToString(svg);
+    } catch (e) { return text; }
+  }
+
+  function attachImage(layer, onDone) {
+    var im = new Image();
+    im.onload = function () {
+      images[layer.id] = im;
+      delete masks[layer.id];
+      if (onDone) onDone(true);
+    };
+    im.onerror = function () { if (onDone) onDone(false); };
+    im.src = layer.src;
+  }
+
+  function addFiles(fileList) {
+    var files = Array.prototype.slice.call(fileList || []).filter(function (f) {
+      return /^image\//.test(f.type) || /\.svg$/i.test(f.name);
+    });
+    if (!files.length) return;
+    var remaining = files.length;
+    files.forEach(function (file) {
+      var isSvg = file.type === "image/svg+xml" || /\.svg$/i.test(file.name);
+      var reader = new FileReader();
+      reader.onload = function () {
+        var src = reader.result;
+        if (isSvg) {
+          src = "data:image/svg+xml;charset=utf-8," +
+            encodeURIComponent(ensureSvgSize(String(src))).replace(/'/g, "%27");
+        }
+        var layer = makeLayer(file.name.replace(/\.[^.]+$/, ""), src);
+        cfg.layers.push(layer);
+        attachImage(layer, function (ok) {
+          if (!ok) {
+            var idx = indexOfId(layer.id);
+            if (idx >= 0) cfg.layers.splice(idx, 1);
+            toast("Không đọc được " + file.name);
+          } else {
+            selectedId = layer.id;
+          }
+          remaining -= 1;
+          if (remaining <= 0) { renderLayerList(); syncLayerUI(); render(); }
+        });
+      };
+      reader.onerror = function () {
+        remaining -= 1;
+        toast("Không đọc được " + file.name);
+        if (remaining <= 0) { renderLayerList(); syncLayerUI(); render(); }
+      };
+      if (isSvg) reader.readAsText(file); else reader.readAsDataURL(file);
+    });
+  }
+
+  /* ---------- layer list UI ---------- */
+  function renderLayerList() {
+    var box = $("layerList");
+    box.innerHTML = "";
+    var n = cfg.layers.length;
+    $("layerCount").textContent = n ? n + " lớp" : "";
+    $("listHint").classList.toggle("hidden", n === 0);
+
+    if (!n) {
+      var empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "Chưa có hình nào";
+      box.appendChild(empty);
+      return;
+    }
+
+    for (var i = n - 1; i >= 0; i--) {
+      (function (idx) {
+        var L = cfg.layers[idx];
+        var row = document.createElement("div");
+        row.className = "layer" + (L.id === selectedId ? " sel" : "") + (L.visible ? "" : " off");
+
+        var eye = document.createElement("button");
+        eye.className = "icon";
+        eye.type = "button";
+        eye.title = L.visible ? "Ẩn lớp" : "Hiện lớp";
+        eye.textContent = L.visible ? "◉" : "○";
+        eye.addEventListener("click", function (e) {
+          e.stopPropagation();
+          L.visible = !L.visible;
+          renderLayerList();
+          render();
+        });
+
+        var thumb = document.createElement("img");
+        thumb.className = "thumb";
+        thumb.src = L.src;
+        thumb.alt = "";
+
+        var name = document.createElement("span");
+        name.className = "lname";
+        name.textContent = L.name;
+        name.title = "Bấm đúp để đổi tên";
+        name.addEventListener("dblclick", function (e) {
+          e.stopPropagation();
+          var v = prompt("Tên lớp", L.name);
+          if (v !== null && v.trim()) { L.name = v.trim(); renderLayerList(); syncLayerUI(); save(); }
+        });
+
+        var up = document.createElement("button");
+        up.className = "icon";
+        up.type = "button";
+        up.title = "Đưa lên trên";
+        up.textContent = "↑";
+        up.disabled = idx === n - 1;
+        up.addEventListener("click", function (e) {
+          e.stopPropagation();
+          move(idx, idx + 1);
+        });
+
+        var down = document.createElement("button");
+        down.className = "icon";
+        down.type = "button";
+        down.title = "Đưa xuống dưới";
+        down.textContent = "↓";
+        down.disabled = idx === 0;
+        down.addEventListener("click", function (e) {
+          e.stopPropagation();
+          move(idx, idx - 1);
+        });
+
+        var del = document.createElement("button");
+        del.className = "icon danger";
+        del.type = "button";
+        del.title = "Xoá lớp";
+        del.textContent = "×";
+        del.addEventListener("click", function (e) {
+          e.stopPropagation();
+          delete images[L.id];
+          delete masks[L.id];
+          cfg.layers.splice(idx, 1);
+          if (selectedId === L.id) {
+            selectedId = cfg.layers.length ? cfg.layers[cfg.layers.length - 1].id : null;
+          }
+          renderLayerList();
+          syncLayerUI();
+          render();
+        });
+
+        row.addEventListener("click", function () {
+          selectedId = L.id;
+          renderLayerList();
+          syncLayerUI();
+        });
+
+        row.appendChild(eye);
+        row.appendChild(thumb);
+        row.appendChild(name);
+        row.appendChild(up);
+        row.appendChild(down);
+        row.appendChild(del);
+        box.appendChild(row);
+      })(i);
+    }
+  }
+
+  function move(from, to) {
+    if (to < 0 || to >= cfg.layers.length) return;
+    var item = cfg.layers.splice(from, 1)[0];
+    cfg.layers.splice(to, 0, item);
+    selectedId = item.id;
+    renderLayerList();
+    render();
+  }
+
+  /* ---------- selected layer controls ---------- */
+  var layerRanges = [
+    ["lTint", "tint", "%", false],
+    ["lBright", "bright", "%", false],
+    ["lScale", "scale", "%", true],
+    ["lX", "x", "%", true],
+    ["lY", "y", "%", true],
+    ["lThreshold", "threshold", "%", false],
+    ["lSoft", "soft", "%", false],
+    ["lNoise", "noise", "%", false]
+  ];
+
+  function syncLayerUI() {
+    var L = selected();
+    $("layerPanel").classList.toggle("hidden", !L);
+    canvas.style.cursor = L ? "grab" : "default";
+    canvas.style.touchAction = L ? "none" : "auto";
+    if (!L) return;
+
+    $("layerTitle").textContent = "Chỉnh lớp: " + L.name;
+    $("lColorPick").value = L.color;
+    $("lColorHex").value = L.color;
+    $("lFit").value = L.fit;
+    $("lSource").value = L.source;
+    $("lInvert").checked = L.invert;
+    layerRanges.forEach(function (r) {
+      $(r[0]).value = L[r[1]];
+      $(r[0] + "Val").textContent = L[r[1]] + r[2];
+    });
+  }
+
+  function bindLayerControls() {
+    layerRanges.forEach(function (r) {
+      var el = $(r[0]);
+      el.addEventListener("input", function () {
+        var L = selected();
+        if (!L) return;
+        L[r[1]] = Number(el.value);
+        $(r[0] + "Val").textContent = L[r[1]] + r[2];
+        if (r[3]) delete masks[L.id];
+        scheduleRender();
+      });
+    });
+
+    $("lFit").addEventListener("change", function () {
+      var L = selected();
+      if (!L) return;
+      L.fit = $("lFit").value;
+      delete masks[L.id];
+      render();
+    });
+    $("lSource").addEventListener("change", function () {
+      var L = selected();
+      if (!L) return;
+      L.source = $("lSource").value;
+      render();
+    });
+    $("lInvert").addEventListener("change", function () {
+      var L = selected();
+      if (!L) return;
+      L.invert = $("lInvert").checked;
+      render();
+    });
+
+    var pick = $("lColorPick"), text = $("lColorHex");
+    pick.addEventListener("input", function () {
+      var L = selected();
+      if (!L) return;
+      L.color = pick.value;
+      text.value = pick.value;
+      render();
+    });
+    text.addEventListener("input", function () {
+      var L = selected();
+      if (!L) return;
+      var v = text.value.trim();
+      if (v && v[0] !== "#") v = "#" + v;
+      if (hexToRgb(v)) {
+        L.color = v.length === 4 ? "#" + v.slice(1).split("").map(function (c) { return c + c; }).join("") : v;
+        pick.value = L.color;
+        render();
+      }
+    });
+
+    $("lReset").addEventListener("click", function () {
+      var L = selected();
+      if (!L) return;
+      L.x = 0; L.y = 0; L.scale = 80;
+      delete masks[L.id];
+      syncLayerUI();
+      render();
+    });
+
+    $("lDuplicate").addEventListener("click", function () {
+      var L = selected();
+      if (!L) return;
+      var copy = JSON.parse(JSON.stringify(L));
+      copy.id = nextId();
+      copy.name = L.name + " bản sao";
+      cfg.layers.splice(indexOfId(L.id) + 1, 0, copy);
+      attachImage(copy, function () {
+        selectedId = copy.id;
+        renderLayerList();
+        syncLayerUI();
+        render();
+      });
+    });
+  }
+
+  /* ---------- drag on canvas ---------- */
+  var drag = null;
+  function initDrag() {
+    canvas.addEventListener("pointerdown", function (e) {
+      var L = selected();
+      if (!L) return;
+      var rect = canvas.getBoundingClientRect();
+      drag = {
+        id: e.pointerId, layer: L,
+        x: e.clientX, y: e.clientY,
+        startX: L.x, startY: L.y,
+        kx: rect.width ? canvas.width / rect.width : 1,
+        ky: rect.height ? canvas.height / rect.height : 1
+      };
+      canvas.setPointerCapture(e.pointerId);
+      canvas.style.cursor = "grabbing";
+      e.preventDefault();
+    });
+
+    canvas.addEventListener("pointermove", function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var L = drag.layer;
+      L.x = clamp(Math.round(drag.startX + ((e.clientX - drag.x) * drag.kx / cfg.w) * 100), -100, 100);
+      L.y = clamp(Math.round(drag.startY + ((e.clientY - drag.y) * drag.ky / cfg.h) * 100), -100, 100);
+      $("lX").value = L.x; $("lXVal").textContent = L.x + "%";
+      $("lY").value = L.y; $("lYVal").textContent = L.y + "%";
+      delete masks[L.id];
+      scheduleRender();
+    });
+
+    ["pointerup", "pointercancel"].forEach(function (ev) {
+      canvas.addEventListener(ev, function (e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        drag = null;
+        canvas.style.cursor = "grab";
+      });
+    });
+
+    canvas.addEventListener("dblclick", function () {
+      var L = selected();
+      if (!L) return;
+      L.x = 0; L.y = 0;
+      delete masks[L.id];
+      syncLayerUI();
+      render();
+    });
+
+    canvas.addEventListener("wheel", function (e) {
+      var L = selected();
+      if (!L) return;
+      if (!e.altKey && !e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      L.scale = clamp(Math.round(L.scale - e.deltaY * 0.1), 5, 300);
+      $("lScale").value = L.scale;
+      $("lScaleVal").textContent = L.scale + "%";
+      delete masks[L.id];
+      scheduleRender();
+    }, { passive: false });
+  }
+
+  /* ---------- exports ---------- */
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  function exportPng(scale) {
+    var off = document.createElement("canvas");
+    drawTo(off, cfg, scale);
+    var name = "bg-" + cfg.w + "x" + cfg.h + (scale > 1 ? "@" + scale + "x" : "") + ".png";
+    off.toBlob(function (b) { download(b, name); toast("Đã tải PNG"); }, "image/png");
+  }
+
+  function buildSvg(c, widthAttr, heightAttr) {
+    var r = (c.radius / 100) * c.dotSize;
+    var rx = r > 0.2 ? ' rx="' + r.toFixed(2) + '"' : "";
+    var groups = {};
+    eachDot(c, function (x, y, color) {
+      if (!groups[color]) groups[color] = [];
+      groups[color].push('<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '"/>');
+    });
+    var body = "";
+    Object.keys(groups).forEach(function (color) {
+      body += '<g fill="' + color + '">' + groups[color].join("") + "</g>";
+    });
+    var box = innerBox(c);
+    var fr = frameR(c);
+    var bgRect = c.clipOutside
+      ? '<rect x="' + box.x + '" y="' + box.y + '" width="' + box.w + '" height="' + box.h +
+        '"' + (fr > 0 ? ' rx="' + fr + '"' : "") + ' fill="' + c.bg + '"/>'
+      : '<rect width="100%" height="100%" fill="' + c.bg + '"/>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + widthAttr + '" height="' + heightAttr +
+      '" viewBox="0 0 ' + c.w + " " + c.h + '">' + bgRect +
+      '<g shape-rendering="crispEdges">' +
+      '<style>rect{width:' + c.dotSize + 'px;height:' + c.dotSize + 'px' +
+      (r > 0.2 ? ";rx:" + r.toFixed(2) + "px" : "") + "}</style>" +
+      body + "</g></svg>";
+  }
+
+  function exportSvg() {
+    var svg = buildSvg(cfg, cfg.w, cfg.h);
+    download(new Blob([svg], { type: "image/svg+xml" }), "bg-" + cfg.w + "x" + cfg.h + ".svg");
+    toast("Đã tải SVG");
+  }
+
+  function printPx() {
+    return {
+      w: Math.round(cfg.printW / 25.4 * cfg.dpi),
+      h: Math.round(cfg.printH / 25.4 * cfg.dpi)
+    };
+  }
+
+  function exportPrintSvg() {
+    var svg = buildSvg(cfg, cfg.printW + "mm", cfg.printH + "mm");
+    download(new Blob([svg], { type: "image/svg+xml" }),
+      "standee-" + cfg.printW + "x" + cfg.printH + "mm.svg");
+    toast("Đã tải SVG khổ " + cfg.printW + " x " + cfg.printH + " mm");
+  }
+
+  var MAX_AREA = 240e6;
+  var MAX_DIM = 16000;
+
+  function exportPrintPng() {
+    var px = printPx();
+    var scale = px.w / cfg.w;
+    var limit = Math.min(
+      Math.sqrt(MAX_AREA / (cfg.w * cfg.h)),
+      MAX_DIM / cfg.w,
+      MAX_DIM / cfg.h
+    );
+    var used = cfg.dpi;
+    if (scale > limit) {
+      scale = limit;
+      used = Math.floor(cfg.dpi * limit / (px.w / cfg.w));
+      toast("Vượt giới hạn trình duyệt, đã hạ xuống " + used + " DPI");
+    }
+    var off = document.createElement("canvas");
+    drawTo(off, cfg, scale);
+    off.toBlob(function (b) {
+      download(b, "standee-" + cfg.printW + "x" + cfg.printH + "mm-" + used + "dpi.png");
+      if (used === cfg.dpi) toast("Đã tải PNG khổ in");
+    }, "image/png");
+  }
+
+  function updatePrintInfo() {
+    var px = printPx();
+    var mmPerPx = cfg.printW / cfg.w;
+    var pitch = cfg.dotSize + cfg.gap;
+    var ratioDesign = cfg.w / cfg.h;
+    var ratioPrint = cfg.printW / cfg.printH;
+    var off = Math.abs(ratioDesign - ratioPrint) / ratioPrint;
+    $("printInfo").innerHTML =
+      "Tương đương " + px.w.toLocaleString("vi-VN") + " x " + px.h.toLocaleString("vi-VN") + " px ở " + cfg.dpi + " DPI." +
+      "<br>Trên bản in thật: chấm khoảng " + (cfg.dotSize * mmPerPx).toFixed(1) +
+      " mm, bước lưới khoảng " + (pitch * mmPerPx).toFixed(1) + " mm" +
+      (cfg.pad > 0 ? ", lề khoảng " + (cfg.pad * mmPerPx).toFixed(0) + " mm" : "") + "." +
+      (off > 0.01
+        ? '<br><span style="color:var(--accent)">Khung thiết kế đang lệch tỉ lệ so với khổ in, hình sẽ bị méo. Bấm nút bên dưới để khớp lại.</span>'
+        : "");
+  }
+
+  function cssSnippet() {
+    var pitch = cfg.dotSize + cfg.gap;
+    var r = (cfg.radius / 100) * cfg.dotSize;
+    var bg = hexToRgb(cfg.bg), dot = hexToRgb(cfg.dot);
+    var col = rgbToHex(
+      bg.r + (dot.r - bg.r) * cfg.opacity / 100,
+      bg.g + (dot.g - bg.g) * cfg.opacity / 100,
+      bg.b + (dot.b - bg.b) * cfg.opacity / 100
+    );
+    var tile = '<svg xmlns="http://www.w3.org/2000/svg" width="' + pitch + '" height="' + pitch + '">' +
+      '<rect width="' + cfg.dotSize + '" height="' + cfg.dotSize + '"' +
+      (r > 0.2 ? ' rx="' + r.toFixed(2) + '"' : "") + ' fill="' + col + '"/></svg>';
+    return ".dotted-bg {\n" +
+      "  background-color: " + cfg.bg + ";\n" +
+      '  background-image: url("data:image/svg+xml,' + encodeURIComponent(tile).replace(/'/g, "%27") + '");\n' +
+      "  background-size: " + pitch + "px " + pitch + "px;\n" +
+      "}";
+  }
+
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._t);
+    t._t = setTimeout(function () { t.classList.remove("show"); }, 1800);
+  }
+
+  /* ---------- persistence ---------- */
+  var saveTimer = null;
+  function save() {
+    if (!window.storage) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      var full = JSON.stringify(cfg);
+      var payload = full.length > 3500000
+        ? JSON.stringify(Object.assign({}, cfg, { layers: [] }))
+        : full;
+      try { window.storage.set("dotbg:last", payload, false); } catch (e) {}
+    }, 700);
+  }
+
+  function load() {
+    if (!window.storage) return Promise.resolve();
+    return window.storage.get("dotbg:last", false).then(function (res) {
+      if (!res || !res.value) return;
+      var saved;
+      try { saved = JSON.parse(res.value); } catch (e) { return; }
+      if (!Array.isArray(saved.layers)) saved.layers = [];
+      Object.assign(cfg, saved);
+      var pending = cfg.layers.slice();
+      if (!pending.length) return;
+      return Promise.all(pending.map(function (L) {
+        return new Promise(function (done) { attachImage(L, function () { done(); }); });
+      })).then(function () {
+        cfg.layers = cfg.layers.filter(function (L) { return !!images[L.id]; });
+        if (cfg.layers.length) selectedId = cfg.layers[cfg.layers.length - 1].id;
+      });
+    }).catch(function () {});
+  }
+
+  /* ---------- global bindings ---------- */
+  function bindRange(id, key, suffix) {
+    var el = $(id), out = $(id + "Val");
+    el.value = cfg[key];
+    out.textContent = cfg[key] + (suffix || "");
+    el.addEventListener("input", function () {
+      cfg[key] = Number(el.value);
+      out.textContent = cfg[key] + (suffix || "");
+      render();
+    });
+  }
+
+  function bindColor(pickId, textId, key) {
+    var pick = $(pickId), text = $(textId);
+    pick.value = cfg[key];
+    text.value = cfg[key];
+    pick.addEventListener("input", function () {
+      cfg[key] = pick.value;
+      text.value = pick.value;
+      render();
+    });
+    text.addEventListener("input", function () {
+      var v = text.value.trim();
+      if (v && v[0] !== "#") v = "#" + v;
+      if (hexToRgb(v)) {
+        cfg[key] = v.length === 4 ? "#" + v.slice(1).split("").map(function (c) { return c + c; }).join("") : v;
+        pick.value = cfg[key];
+        render();
+      }
+    });
+  }
+
+  function syncPreset() {
+    var key = cfg.w + "x" + cfg.h;
+    var opt = Array.prototype.slice.call($("preset").options).filter(function (o) { return o.value === key; })[0];
+    $("preset").value = opt ? key : "custom";
+  }
+
+  function invalidateAllMasks() { masks = {}; }
+
+  function initUI() {
+    $("w").value = cfg.w;
+    $("h").value = cfg.h;
+    syncPreset();
+
+    $("preset").addEventListener("change", function () {
+      var v = $("preset").value;
+      if (v === "custom") return;
+      var p = v.split("x").map(Number);
+      cfg.w = p[0]; cfg.h = p[1];
+      $("w").value = p[0]; $("h").value = p[1];
+      invalidateAllMasks();
+      render();
+    });
+
+    ["w", "h"].forEach(function (k) {
+      $(k).addEventListener("input", function () {
+        cfg[k] = clamp(Number($(k).value) || 16, 16, 12000);
+        syncPreset();
+        invalidateAllMasks();
+        render();
+      });
+    });
+
+    $("pw").value = cfg.printW;
+    $("ph").value = cfg.printH;
+    $("dpi").value = String(cfg.dpi);
+    $("pw").addEventListener("input", function () {
+      cfg.printW = clamp(Number($("pw").value) || 10, 10, 10000);
+      updatePrintInfo();
+      save();
+    });
+    $("ph").addEventListener("input", function () {
+      cfg.printH = clamp(Number($("ph").value) || 10, 10, 10000);
+      updatePrintInfo();
+      save();
+    });
+    $("dpi").addEventListener("change", function () {
+      cfg.dpi = Number($("dpi").value);
+      updatePrintInfo();
+      save();
+    });
+
+    $("matchRatio").addEventListener("click", function () {
+      var ratio = cfg.printW / cfg.printH;
+      var long = 2000;
+      if (ratio >= 1) { cfg.w = long; cfg.h = Math.round(long / ratio); }
+      else { cfg.h = long; cfg.w = Math.round(long * ratio); }
+      $("w").value = cfg.w;
+      $("h").value = cfg.h;
+      syncPreset();
+      invalidateAllMasks();
+      render();
+      toast("Khung thiết kế đã khớp tỉ lệ khổ in");
+    });
+
+    $("dlPrintPng").addEventListener("click", exportPrintPng);
+    $("dlPrintSvg").addEventListener("click", exportPrintSvg);
+
+    bindColor("bgColor", "bgHex", "bg");
+    bindColor("dotColor", "dotHex", "dot");
+    bindColor("waveColor", "waveHex", "wave");
+
+    bindRange("dotSize", "dotSize");
+    bindRange("gap", "gap");
+    bindRange("radius", "radius", "%");
+    bindRange("opacity", "opacity", "%");
+    bindRange("pad", "pad", "px");
+    bindRange("frameRadius", "frameRadius", "px");
+    bindRange("waveHeight", "waveHeight", "%");
+    bindRange("waveAmp", "waveAmp", "%");
+    bindRange("waveFeather", "waveFeather", "%");
+    bindRange("waveNoise", "waveNoise", "%");
+
+    ["dotSize", "gap", "pad"].forEach(function (id) {
+      $(id).addEventListener("input", invalidateAllMasks);
+    });
+
+    var clipBox = $("clipOutside");
+    clipBox.checked = !!cfg.clipOutside;
+    clipBox.addEventListener("change", function () {
+      cfg.clipOutside = clipBox.checked;
+      render();
+    });
+
+    var waveToggle = $("waveOn");
+    waveToggle.checked = cfg.waveOn;
+    $("waveBlock").classList.toggle("disabled-block", !cfg.waveOn);
+    waveToggle.addEventListener("change", function () {
+      cfg.waveOn = waveToggle.checked;
+      $("waveBlock").classList.toggle("disabled-block", !cfg.waveOn);
+      render();
+    });
+
+    $("reseed").addEventListener("click", function () {
+      cfg.seed = Math.floor(Math.random() * 9999);
+      render();
+    });
+
+    $("dropZone").addEventListener("click", function () { $("fileInput").click(); });
+    $("fileInput").addEventListener("change", function (e) {
+      addFiles(e.target.files);
+      e.target.value = "";
+    });
+
+    [$("dropZone"), $("stage")].forEach(function (zone) {
+      ["dragenter", "dragover"].forEach(function (ev) {
+        zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add("over"); });
+      });
+      ["dragleave", "drop"].forEach(function (ev) {
+        zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove("over"); });
+      });
+      zone.addEventListener("drop", function (e) {
+        if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+      });
+    });
+
+    $("dlPng").addEventListener("click", function () { exportPng(1); });
+    $("dlPng2x").addEventListener("click", function () { exportPng(2); });
+    $("dlSvg").addEventListener("click", exportSvg);
+    $("copyCss").addEventListener("click", function () {
+      var css = cssSnippet();
+      function fallbackCopy() {
+        var ta = document.createElement("textarea");
+        ta.value = css;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); toast("Đã sao chép CSS"); }
+        catch (e) { toast("Không sao chép được, bạn tải SVG nhé"); }
+        ta.remove();
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(css).then(function () { toast("Đã sao chép CSS"); }, fallbackCopy);
+      } else { fallbackCopy(); }
+    });
+
+    bindLayerControls();
+    initDrag();
+    renderLayerList();
+    syncLayerUI();
+  }
+
+  Promise.resolve(load()).then(function () {
+    initUI();
+    render();
+  });
+})();
+</script>
