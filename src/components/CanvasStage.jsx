@@ -63,44 +63,42 @@ export default function CanvasStage({ cfg, revision, layer, patchLayer, message,
   const stop = (e) => e.preventDefault();
 
   return (
-    <div>
-      <div
-        className={"stage" + (over ? " over" : "")}
-        onDragEnter={(e) => {
-          stop(e);
-          setOver(true);
-        }}
-        onDragOver={(e) => {
-          stop(e);
-          setOver(true);
-        }}
-        onDragLeave={(e) => {
-          stop(e);
-          setOver(false);
-        }}
-        onDrop={(e) => {
-          stop(e);
-          setOver(false);
-          if (e.dataTransfer?.files.length) onAddFiles(e.dataTransfer.files);
-        }}
-      >
-        <canvas
-          id="preview"
-          ref={canvasRef}
-          style={{ cursor: layer ? "grab" : "default", touchAction: layer ? "none" : "auto" }}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
-          onDoubleClick={() => layer && patchLayer({ x: 0, y: 0 })}
-        />
-      </div>
+    <main
+      className={"stage" + (over ? " over" : "")}
+      onDragEnter={(e) => {
+        stop(e);
+        setOver(true);
+      }}
+      onDragOver={(e) => {
+        stop(e);
+        setOver(true);
+      }}
+      onDragLeave={(e) => {
+        stop(e);
+        setOver(false);
+      }}
+      onDrop={(e) => {
+        stop(e);
+        setOver(false);
+        if (e.dataTransfer?.files.length) onAddFiles(e.dataTransfer.files);
+      }}
+    >
+      <canvas
+        id="preview"
+        ref={canvasRef}
+        style={{ cursor: layer ? "grab" : "default", touchAction: layer ? "none" : "auto" }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onDoubleClick={() => layer && patchLayer({ x: 0, y: 0 })}
+      />
       <div className="meta">
         <span>
           {cfg.w} x {cfg.h} px · bước lưới {g.pitch}px · {dotCount.toLocaleString("vi-VN")} chấm
         </span>
         <span className={"toast" + (message ? " show" : "")}>{message}</span>
       </div>
-    </div>
+    </main>
   );
 }

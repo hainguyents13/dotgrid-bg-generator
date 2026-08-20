@@ -2,6 +2,10 @@
   color-scheme: dark;
 }
 
+html, body { height: 100%; }
+/* Chỉ sidebar và khung xem trước tự cuộn, trang không cuộn theo. */
+body { overflow: hidden; }
+
 body {
   margin: 0;
   --bg: #0a0a0a;
@@ -17,36 +21,56 @@ body {
   color: var(--ink);
   background: var(--bg);
   min-height: 100%;
-  padding: 20px;
   box-sizing: border-box;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 *, *::before, *::after { box-sizing: border-box; }
 
-.wrap {
-  display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
-  max-width: 1340px;
-  margin: 0 auto;
+/* Sidebar sát mép trái, phần còn lại là khung xem trước chiếm hết chỗ. */
+.shell {
+  display: flex;
+  align-items: stretch;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
-@media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
 
-.head { margin: 0 0 18px; }
+.sidebar {
+  flex: 0 0 340px;
+  width: 340px;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 16px 14px 24px;
+}
+
+.subsidebar {
+  flex: 0 0 300px;
+  width: 300px;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 16px 14px 24px;
+}
+
+.head { margin: 0 0 16px; }
 .head h1 { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 4px; }
 .head p { margin: 0; font-size: 12.5px; color: var(--ink-mute); }
 
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 14px;
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
+@media (max-width: 900px) {
+  body { overflow: auto; height: auto; }
+  /* Đảo chiều để khung xem trước nằm trên bảng điều khiển. */
+  .shell { flex-direction: column-reverse; justify-content: flex-end; height: auto; overflow: visible; }
+  .sidebar, .subsidebar {
+    flex: none; width: 100%; height: auto; overflow: visible;
+    border-right: 0; border-top: 1px solid var(--line);
+  }
 }
-@media (max-width: 900px) { .panel { max-height: none; } }
 
 .group { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .group:first-child { padding-top: 0; }
@@ -171,22 +195,53 @@ button.icon.danger:hover { color: var(--accent); }
 .empty { font-size: 12px; color: var(--ink-mute); text-align: center; padding: 6px 0 10px; }
 
 .stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
   background: repeating-conic-gradient(#1c1c1c 0% 25%, #151515 0% 50%) 50% / 16px 16px;
-  border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 20px; display: flex; align-items: center; justify-content: center;
-  min-height: 420px;
+  padding: 28px 28px 52px;
+  display: flex; align-items: center; justify-content: center;
 }
-.stage.over { border-color: var(--accent); }
-#preview { max-width: 100%; max-height: 68vh; display: block; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+.stage::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  border: 2px solid transparent; transition: border-color 0.12s;
+}
+.stage.over::after { border-color: var(--accent); }
+#preview { max-width: 100%; max-height: 100%; display: block; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
 
 .meta {
+  position: absolute; left: 0; right: 0; bottom: 0;
   display: flex; justify-content: space-between; align-items: center;
-  margin-top: 10px; font-size: 11.5px; color: var(--ink-mute);
+  padding: 8px 16px; font-size: 11.5px; color: var(--ink-mute);
   font-variant-numeric: tabular-nums; gap: 12px; flex-wrap: wrap;
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0));
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  /* Preview dính trên đầu để vẫn thấy kết quả khi cuộn bảng điều khiển. */
+  .stage {
+    position: sticky; top: 0; z-index: 5;
+    height: 46vh; min-height: 260px;
+    padding: 14px 14px 34px;
+    border-bottom: 1px solid var(--line);
+  }
+  #preview { max-height: 100%; }
 }
 .toast { color: var(--accent); opacity: 0; transition: opacity 0.2s; }
 .toast.show { opacity: 1; }
 .hint { font-size: 11.5px; color: var(--ink-mute); margin: 8px 0 0; }
 .disabled-block { opacity: 0.4; pointer-events: none; }
 .hidden { display: none; }
+
+.seg { display: flex; gap: 2px; padding: 2px; background: var(--panel-2); border-radius: 6px; }
+.seg button {
+  padding: 3px 10px; font-size: 11px; line-height: 1.4;
+  border: 0; border-radius: 4px; background: none; color: var(--ink-mute);
+  text-transform: none; letter-spacing: 0;
+}
+.seg button:hover { background: #232323; color: var(--ink); }
+.seg button.on { background: var(--accent); color: #fff; font-weight: 550; }
+.seg button.on:hover { background: #f5423d; }
   

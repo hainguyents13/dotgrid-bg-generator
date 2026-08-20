@@ -1,5 +1,6 @@
 /** Xuất PNG, SVG, khổ in và sao chép CSS. */
 import { drawTo, buildSvg, cssSnippet } from "./renderer.js";
+import { printPx } from "./page-size.js";
 
 const MAX_AREA = 240e6;
 const MAX_DIM = 16000;
@@ -13,13 +14,6 @@ function download(blob, name) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
-}
-
-export function printPx(c) {
-  return {
-    w: Math.round((c.printW / 25.4) * c.dpi),
-    h: Math.round((c.printH / 25.4) * c.dpi)
-  };
 }
 
 export function exportPng(c, scale, toast) {

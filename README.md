@@ -19,10 +19,11 @@ npm run preview
 src/
 ├── main.jsx                 # điểm vào React
 ├── App.jsx                  # state cấu hình + danh sách lớp
-├── styles.css               # style gốc giữ nguyên
+├── styles.css               # sidebar, subsidebar, khung xem trước
 ├── lib/
 │   ├── color.js             # hex ↔ rgb, pha trộn, clamp
 │   ├── geometry.js          # khung, lưới, vị trí lớp, đường vệt sáng
+│   ├── page-size.js         # quy đổi khổ in mm ↔ khung thiết kế px
 │   ├── config.js            # cấu hình mặc định, khuôn lớp
 │   ├── image-store.js       # kho ảnh đã nạp + cache mặt nạ lưới
 │   ├── renderer.js          # duyệt chấm, vẽ canvas, sinh SVG/CSS
@@ -31,6 +32,15 @@ src/
 │   └── storage.js           # lưu phiên vào localStorage
 └── components/              # bảng điều khiển và khung xem trước
 ```
+
+## Bố cục
+
+Ba cột: sidebar trái là cài đặt chung cho trang, subsidebar là nơi thả media và chỉnh riêng từng lớp, phần còn lại là khung xem trước nền trong suốt.
+
+Khổ trang có hai kiểu, đổi kiểu thì kích thước đổi theo:
+
+- **Web** — nhập thẳng pixel, xuất PNG, SVG và CSS lặp.
+- **In** — nhập mm cùng DPI, khung thiết kế tự suy ra đúng tỉ lệ (thu về tối đa 2400px cho preview nhẹ), xuất SVG mang đơn vị mm hoặc PNG đúng DPI.
 
 Ảnh và cache mặt nạ nằm ngoài state React (`image-store.js`) vì là dữ liệu nhị phân nặng; state chỉ giữ cấu hình để lưu được vào localStorage.
 

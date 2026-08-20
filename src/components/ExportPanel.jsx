@@ -1,8 +1,30 @@
-/** Xuất PNG, SVG và CSS lặp. */
-import { exportPng, exportSvg, copyCss } from "../lib/exporters.js";
+/** Xuất file theo kiểu khổ trang đang chọn. */
+import { exportPng, exportSvg, copyCss, exportPrintPng, exportPrintSvg } from "../lib/exporters.js";
 import { Group } from "./controls.jsx";
 
 export default function ExportPanel({ cfg, toast }) {
+  if (cfg.sizeMode === "print") {
+    return (
+      <Group title="Xuất file">
+        <div className="btn-grid">
+          <button className="primary full" onClick={() => exportPrintSvg(cfg, toast)}>
+            SVG khổ in
+          </button>
+          <button className="full" onClick={() => exportPrintPng(cfg, toast)}>
+            PNG khổ in
+          </button>
+          <button className="full" onClick={() => exportSvg(cfg, toast)}>
+            SVG theo pixel
+          </button>
+        </div>
+        <p className="hint">
+          SVG khổ in mang sẵn đơn vị mm nên nhà in mở ra là đúng khổ, không phụ thuộc số pixel. Đây là
+          lựa chọn nên dùng cho standee.
+        </p>
+      </Group>
+    );
+  }
+
   return (
     <Group title="Xuất file">
       <div className="btn-grid">

@@ -1,8 +1,13 @@
 /** Cấu hình mặc định và khuôn một lớp hình. */
 
 export const DEFAULT_CONFIG = {
+  /* "web" đo bằng pixel, "print" suy khung thiết kế từ khổ mm và DPI. */
+  sizeMode: "web",
   w: 1080,
   h: 1080,
+  /* Kích thước pixel người dùng đặt ở kiểu Web, giữ lại để quay về sau khi sang kiểu In. */
+  webW: 1080,
+  webH: 1080,
   bg: "#0d0d0d",
   dot: "#1f1f1f",
   dotSize: 4,

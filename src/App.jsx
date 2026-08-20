@@ -4,8 +4,8 @@ import { DEFAULT_CONFIG, nextId } from "./lib/config.js";
 import { attachImage, dropImage, hasImage } from "./lib/image-store.js";
 import { layersFromFiles } from "./lib/file-input.js";
 import { saveConfig, loadConfig } from "./lib/storage.js";
-import SizePanel from "./components/SizePanel.jsx";
-import PrintPanel from "./components/PrintPanel.jsx";
+import { designSizeForPrint } from "./lib/page-size.js";
+import PageSizePanel from "./components/PageSizePanel.jsx";
 import DotsPanel from "./components/DotsPanel.jsx";
 import LayersPanel from "./components/LayersPanel.jsx";
 import LayerControls from "./components/LayerControls.jsx";
@@ -28,6 +28,17 @@ export default function App() {
   }, []);
 
   const update = useCallback((patch) => setCfg((c) => ({ ...c, ...patch })), []);
+
+  /* Đổi kiểu khổ trang thì kích thước khung đổi theo kiểu đó luôn. */
+  const setMode = useCallback((sizeMode) => {
+    setCfg((c) => {
+      if (c.sizeMode === sizeMode) return c;
+      if (sizeMode === "print") {
+        return { ...c, sizeMode, ...designSizeForPrint(c.printW, c.printH, c.dpi) };
+      }
+      return { ...c, sizeMode, w: c.webW, h: c.webH };
+    });
+  }, []);
 
   const patchLayer = useCallback(
     (id, patch) =>
@@ -126,43 +137,44 @@ export default function App() {
   };
 
   return (
-    <>
-      <div className="head">
-        <h1>Trình tạo background chấm vuông</h1>
-        <p>
-          Thả nhiều file vector vào, xếp lớp và chỉnh riêng từng hình, rồi xuất PNG, SVG hoặc lấy CSS.
-        </p>
-      </div>
-
-      <div className="wrap">
-        <div className="panel">
-          <SizePanel cfg={cfg} update={update} />
-          <PrintPanel cfg={cfg} update={update} toast={toast} />
-          <DotsPanel cfg={cfg} update={update} />
-          <LayersPanel
-            layers={cfg.layers}
-            selectedId={selectedId}
-            onAddFiles={handleAddFiles}
-            {...layerHandlers}
-          />
-          <LayerControls
-            layer={selected}
-            patch={(patch) => patchLayer(selected.id, patch)}
-            onDuplicate={duplicateLayer}
-          />
-          <WavePanel cfg={cfg} update={update} />
-          <ExportPanel cfg={cfg} toast={toast} />
+    <div className="shell">
+      <aside className="sidebar">
+        <div className="head">
+          <h1>Trình tạo background chấm vuông</h1>
+          <p>Cài đặt chung cho trang, rồi xuất PNG, SVG hoặc lấy CSS.</p>
         </div>
+        <PageSizePanel cfg={cfg} update={update} setMode={setMode} />
+        <DotsPanel cfg={cfg} update={update} />
+        <WavePanel cfg={cfg} update={update} />
+        <ExportPanel cfg={cfg} toast={toast} />
+      </aside>
 
-        <CanvasStage
-          cfg={cfg}
-          revision={revision}
-          layer={selected}
-          patchLayer={(patch) => patchLayer(selected.id, patch)}
-          message={message}
+      <aside className="subsidebar">
+        <div className="head">
+          <h1>Hình trong khung</h1>
+          <p>Thả file vector vào rồi chỉnh riêng từng lớp.</p>
+        </div>
+        <LayersPanel
+          layers={cfg.layers}
+          selectedId={selectedId}
           onAddFiles={handleAddFiles}
+          {...layerHandlers}
         />
-      </div>
-    </>
+        <LayerControls
+          layer={selected}
+          patch={(patch) => patchLayer(selected.id, patch)}
+          onDuplicate={duplicateLayer}
+        />
+      </aside>
+
+      <CanvasStage
+        cfg={cfg}
+        revision={revision}
+        layer={selected}
+        patchLayer={(patch) => patchLayer(selected.id, patch)}
+        message={message}
+        onAddFiles={handleAddFiles}
+      />
+    </div>
   );
 }
