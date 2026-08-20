@@ -3,6 +3,7 @@ import { grid, fitRect } from "./geometry.js";
 
 const images = new Map();
 const masks = new Map();
+const tinted = new Map();
 
 export function getImage(id) {
   return images.get(id);
@@ -16,11 +17,35 @@ export function hasImage(id) {
 export function setSource(id, source) {
   images.set(id, source);
   masks.delete(id);
+  tinted.delete(id);
+}
+
+/**
+ * Bản sao của nguồn đã tô sang màu của lớp, dùng cho chữ vẽ nguyên nét.
+ * Cache tự hỏng khi nguồn hoặc màu đổi.
+ */
+export function getTinted(id, color) {
+  const src = images.get(id);
+  if (!src) return null;
+  const hit = tinted.get(id);
+  if (hit && hit.color === color && hit.src === src) return hit.canvas;
+
+  const cv = document.createElement("canvas");
+  cv.width = src.naturalWidth || src.width || 1;
+  cv.height = src.naturalHeight || src.height || 1;
+  const g = cv.getContext("2d");
+  g.fillStyle = color;
+  g.fillRect(0, 0, cv.width, cv.height);
+  g.globalCompositeOperation = "destination-in";
+  g.drawImage(src, 0, 0);
+  tinted.set(id, { color, src, canvas: cv });
+  return cv;
 }
 
 export function dropImage(id) {
   images.delete(id);
   masks.delete(id);
+  tinted.delete(id);
 }
 
 /** Nạp ảnh cho một lớp, trả về true nếu đọc được. */

@@ -17,6 +17,8 @@ export function makeTextLayer() {
     font: DEFAULT_FONT.family,
     weight: DEFAULT_FONT.weights[DEFAULT_FONT.weights.length - 1],
     align: "center",
+    /* Bật thì chữ được vẽ nguyên nét thay vì rã thành chấm. */
+    solid: false,
     /* Chữ vẽ ra đã là khối đặc nên lấy luôn màu của lớp. */
     tint: 0
   };
@@ -24,6 +26,11 @@ export function makeTextLayer() {
 
 export function isTextLayer(layer) {
   return layer?.kind === "text";
+}
+
+/** Lớp chữ vẽ nguyên nét, không tham gia lưới chấm. */
+export function isSolidText(layer) {
+  return isTextLayer(layer) && !!layer.solid;
 }
 
 /** Vẽ chữ trắng trên nền trong suốt, canvas ôm sát nội dung kể cả phần dấu. */

@@ -1,7 +1,8 @@
 /** Nhân dựng hình: duyệt từng chấm, vẽ ra canvas và sinh SVG hoặc CSS. */
 import { hexToRgb, rgbToHex, mix, clamp } from "./color.js";
-import { grid, innerBox, frameR, pointInFrame, framePath, rand } from "./geometry.js";
-import { buildMask } from "./image-store.js";
+import { grid, innerBox, frameR, pointInFrame, framePath, fitRect, rand } from "./geometry.js";
+import { buildMask, getImage, getTinted } from "./image-store.js";
+import { isSolidText } from "./text-layer.js";
 
 /**
  * Duyệt mọi chấm trong lưới và gọi cb với toạ độ cùng màu cuối cùng.
@@ -17,7 +18,7 @@ export function eachDot(c, cb, angles = null) {
 
   const active = [];
   c.layers.forEach((L, k) => {
-    if (!L.visible) return;
+    if (!L.visible || isSolidText(L)) return;
     const data = buildMask(c, L, angles ? angles[L.id] || 0 : 0);
     if (!data) return;
     active.push({
@@ -78,6 +79,40 @@ export function eachDot(c, cb, angles = null) {
   }
 }
 
+/** Duyệt các lớp chữ vẽ nguyên nét cùng khung đặt của chúng. */
+function eachSolid(c, cb) {
+  c.layers.forEach((L) => {
+    if (!L.visible || !isSolidText(L)) return;
+    const im = getImage(L.id);
+    if (!im) return;
+    const iw = im.naturalWidth || im.width || 1;
+    const ih = im.naturalHeight || im.height || 1;
+    cb(L, fitRect(c, L, iw, ih));
+  });
+}
+
+/** Vẽ chữ nguyên nét đè lên lưới chấm, đã tô sẵn màu của lớp. */
+function drawSolid(g2, c, angles) {
+  eachSolid(c, (L, r) => {
+    const art = getTinted(L.id, L.color);
+    if (!art) return;
+    const angle = angles ? angles[L.id] || 0 : 0;
+    g2.save();
+    if (c.clipOutside) {
+      framePath(g2, innerBox(c), frameR(c));
+      g2.clip();
+    }
+    if (angle) {
+      g2.translate(r.dx + r.dw / 2, r.dy + r.dh / 2);
+      g2.rotate((angle * Math.PI) / 180);
+      g2.drawImage(art, -r.dw / 2, -r.dh / 2, r.dw, r.dh);
+    } else {
+      g2.drawImage(art, r.dx, r.dy, r.dw, r.dh);
+    }
+    g2.restore();
+  });
+}
+
 /** Vẽ toàn bộ background lên một canvas bất kỳ ở tỉ lệ cho trước. */
 export function drawTo(target, c, scale, angles = null) {
   const g2 = target.getContext("2d");
@@ -102,6 +137,7 @@ export function drawTo(target, c, scale, angles = null) {
       g2.fillRect(x, y, c.dotSize, c.dotSize);
     }
   }, angles);
+  drawSolid(g2, c, angles);
   g2.setTransform(1, 0, 0, 1, 0, 0);
 }
 
@@ -123,13 +159,30 @@ export function buildSvg(c, widthAttr, heightAttr) {
     ? '<rect x="' + box.x + '" y="' + box.y + '" width="' + box.w + '" height="' + box.h + '"' +
       (fr > 0 ? ' rx="' + fr + '"' : "") + ' fill="' + c.bg + '"/>'
     : '<rect width="100%" height="100%" fill="' + c.bg + '"/>';
+  let overlay = "";
+  eachSolid(c, (L, rect) => {
+    const art = getTinted(L.id, L.color);
+    if (!art) return;
+    overlay +=
+      '<image href="' + art.toDataURL("image/png") +
+      '" x="' + rect.dx.toFixed(1) + '" y="' + rect.dy.toFixed(1) +
+      '" width="' + rect.dw.toFixed(1) + '" height="' + rect.dh.toFixed(1) +
+      '" preserveAspectRatio="none"/>';
+  });
+  if (overlay && c.clipOutside) {
+    overlay =
+      '<clipPath id="frame"><rect x="' + box.x + '" y="' + box.y + '" width="' + box.w +
+      '" height="' + box.h + '"' + (fr > 0 ? ' rx="' + fr + '"' : "") + "/></clipPath>" +
+      '<g clip-path="url(#frame)">' + overlay + "</g>";
+  }
+
   return (
     '<svg xmlns="http://www.w3.org/2000/svg" width="' + widthAttr + '" height="' + heightAttr +
     '" viewBox="0 0 ' + c.w + " " + c.h + '">' + bgRect +
     '<g shape-rendering="crispEdges">' +
     "<style>rect{width:" + c.dotSize + "px;height:" + c.dotSize + "px" +
     (r > 0.2 ? ";rx:" + r.toFixed(2) + "px" : "") + "}</style>" +
-    body + "</g></svg>"
+    body + "</g>" + overlay + "</svg>"
   );
 }
 

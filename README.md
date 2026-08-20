@@ -44,7 +44,7 @@ Khổ trang có hai kiểu, đổi kiểu thì kích thước đổi theo:
 - **Web** — nhập thẳng pixel, xuất PNG, SVG và CSS lặp.
 - **In** — nhập mm cùng DPI, khung thiết kế tự suy ra đúng tỉ lệ (thu về tối đa 2400px cho preview nhẹ), xuất SVG mang đơn vị mm hoặc PNG đúng DPI.
 
-Lớp có hai loại: file vector hoặc ảnh thả vào, và lớp chữ tự nhập với font lấy từ Google Fonts (danh sách chọn sẵn trong `src/lib/google-fonts.js`), chỉnh được độ đậm và canh trái/giữa/phải cho nhiều dòng. Chữ được vẽ ra canvas rồi chuyển thành lưới chấm như mọi lớp khác, nên lưu phiên chỉ tốn vài dòng text thay vì ảnh.
+Lớp có hai loại: file vector hoặc ảnh thả vào, và lớp chữ tự nhập với font lấy từ Google Fonts (danh sách chọn sẵn trong `src/lib/google-fonts.js`), chỉnh được độ đậm, canh trái/giữa/phải cho nhiều dòng, và có thể vẽ nguyên nét đè lên lưới thay vì rã thành chấm. Chữ được vẽ ra canvas rồi chuyển thành lưới chấm như mọi lớp khác, nên lưu phiên chỉ tốn vài dòng text thay vì ảnh.
 
 Mỗi lớp chỉnh được màu, mức phóng to, ngưỡng, độ chuyển, độ nhiễu và tốc độ xoay. Xoay chỉ chạy ở khung xem trước; PNG, SVG và CSS xuất ra luôn giữ hình ở góc gốc.
 

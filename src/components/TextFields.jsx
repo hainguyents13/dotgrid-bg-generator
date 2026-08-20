@@ -1,7 +1,7 @@
 /** Nội dung và kiểu chữ của lớp chữ. */
 import { useId } from "react";
 import { GOOGLE_FONTS, weightsOf } from "../lib/google-fonts.js";
-import { SelectRow } from "./controls.jsx";
+import { SelectRow, CheckRow } from "./controls.jsx";
 
 const ALIGN_OPTIONS = [
   { value: "left", label: "Canh trái" },
@@ -42,6 +42,17 @@ export default function TextFields({ layer, patch }) {
         options={ALIGN_OPTIONS}
         onChange={(align) => patch({ align })}
       />
+      <CheckRow
+        label="Vẽ chữ nguyên nét, không rã thành chấm"
+        checked={!!layer.solid}
+        onChange={(solid) => patch({ solid })}
+      />
+      {layer.solid && (
+        <p className="hint">
+          Chữ nguyên nét nằm đè lên lưới chấm. Khi xuất SVG, phần chữ này được nhúng dạng ảnh vì file
+          không mang theo font.
+        </p>
+      )}
       <SelectRow
         label="Độ đậm"
         value={String(layer.weight)}

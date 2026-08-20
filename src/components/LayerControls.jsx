@@ -1,11 +1,12 @@
 /** Bảng chỉnh riêng lớp đang chọn. */
-import { isTextLayer } from "../lib/text-layer.js";
+import { isTextLayer, isSolidText } from "../lib/text-layer.js";
 import { Group, RangeRow, ColorRow } from "./controls.jsx";
 import TextFields from "./TextFields.jsx";
 
 export default function LayerControls({ layer, patch, onDuplicate }) {
   if (!layer) return null;
   const isText = isTextLayer(layer);
+  const isSolid = isSolidText(layer);
 
   return (
     <Group title={"Chỉnh lớp: " + layer.name}>
@@ -19,9 +20,14 @@ export default function LayerControls({ layer, patch, onDuplicate }) {
         </>
       )}
       <RangeRow label="Phóng to" min={5} max={300} suffix="%" value={layer.scale} onChange={(v) => patch({ scale: v })} />
-      <RangeRow label="Ngưỡng" min={0} max={100} suffix="%" value={layer.threshold} onChange={(v) => patch({ threshold: v })} />
-      <RangeRow label="Độ chuyển" min={0} max={100} suffix="%" value={layer.soft} onChange={(v) => patch({ soft: v })} />
-      <RangeRow label="Độ nhiễu" min={0} max={100} suffix="%" value={layer.noise} onChange={(v) => patch({ noise: v })} />
+      {/* Ba thanh này chỉ có nghĩa khi lớp được rã thành chấm. */}
+      {!isSolid && (
+        <>
+          <RangeRow label="Ngưỡng" min={0} max={100} suffix="%" value={layer.threshold} onChange={(v) => patch({ threshold: v })} />
+          <RangeRow label="Độ chuyển" min={0} max={100} suffix="%" value={layer.soft} onChange={(v) => patch({ soft: v })} />
+          <RangeRow label="Độ nhiễu" min={0} max={100} suffix="%" value={layer.noise} onChange={(v) => patch({ noise: v })} />
+        </>
+      )}
       <RangeRow
         label="Xoay tròn"
         min={-120}
