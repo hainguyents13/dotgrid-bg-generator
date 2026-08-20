@@ -32,23 +32,27 @@ export function nextId() {
   return "L" + Date.now().toString(36) + uid;
 }
 
+/** Thuộc tính mặc định của một lớp, tách riêng để vá cấu hình lưu từ bản cũ. */
+export const LAYER_DEFAULTS = {
+  visible: true,
+  color: "#e8322d",
+  tint: 100,
+  bright: 100,
+  scale: 80,
+  x: 0,
+  y: 0,
+  /* Độ mỗi giây, chỉ chạy ở khung xem trước. */
+  spin: 0,
+  threshold: 30,
+  soft: 25,
+  noise: 40
+};
+
 export function makeLayer(name, src) {
-  return {
-    id: nextId(),
-    name,
-    src,
-    visible: true,
-    color: "#e8322d",
-    tint: 100,
-    bright: 100,
-    fit: "contain",
-    scale: 80,
-    x: 0,
-    y: 0,
-    source: "alpha",
-    invert: false,
-    threshold: 30,
-    soft: 25,
-    noise: 40
-  };
+  return { ...LAYER_DEFAULTS, id: nextId(), name, src };
+}
+
+/** Bổ sung thuộc tính còn thiếu cho lớp đọc từ phiên trước. */
+export function withLayerDefaults(layer) {
+  return { ...LAYER_DEFAULTS, ...layer };
 }

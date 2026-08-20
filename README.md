@@ -42,6 +42,8 @@ Khổ trang có hai kiểu, đổi kiểu thì kích thước đổi theo:
 - **Web** — nhập thẳng pixel, xuất PNG, SVG và CSS lặp.
 - **In** — nhập mm cùng DPI, khung thiết kế tự suy ra đúng tỉ lệ (thu về tối đa 2400px cho preview nhẹ), xuất SVG mang đơn vị mm hoặc PNG đúng DPI.
 
+Mỗi lớp chỉnh được màu, độ sáng, mức phóng to, ngưỡng, độ chuyển, độ nhiễu và tốc độ xoay. Xoay chỉ chạy ở khung xem trước; PNG, SVG và CSS xuất ra luôn giữ hình ở góc gốc.
+
 Ảnh và cache mặt nạ nằm ngoài state React (`image-store.js`) vì là dữ liệu nhị phân nặng; state chỉ giữ cấu hình để lưu được vào localStorage.
 
 ## Deploy

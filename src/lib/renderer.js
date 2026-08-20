@@ -3,8 +3,11 @@ import { hexToRgb, rgbToHex, mix, clamp } from "./color.js";
 import { grid, innerBox, frameR, pointInFrame, framePath, rand } from "./geometry.js";
 import { buildMask } from "./image-store.js";
 
-/** Duyệt mọi chấm trong lưới và gọi cb với toạ độ cùng màu cuối cùng. */
-export function eachDot(c, cb) {
+/**
+ * Duyệt mọi chấm trong lưới và gọi cb với toạ độ cùng màu cuối cùng.
+ * `angles` là góc xoay tạm của từng lớp, chỉ khung xem trước truyền vào.
+ */
+export function eachDot(c, cb, angles = null) {
   const g = grid(c);
   const box = innerBox(c);
   const fr = frameR(c);
@@ -15,7 +18,7 @@ export function eachDot(c, cb) {
   const active = [];
   c.layers.forEach((L, k) => {
     if (!L.visible) return;
-    const data = buildMask(c, L);
+    const data = buildMask(c, L, angles ? angles[L.id] || 0 : 0);
     if (!data) return;
     active.push({
       L,
@@ -50,12 +53,7 @@ export function eachDot(c, cb) {
       for (let a = 0; a < active.length; a++) {
         const it = active[a];
         const d = it.data;
-        const alpha = d[p + 3] / 255;
-        let cov =
-          it.L.source === "lum"
-            ? ((0.299 * d[p] + 0.587 * d[p + 1] + 0.114 * d[p + 2]) / 255) * alpha
-            : alpha;
-        if (it.L.invert) cov = 1 - cov;
+        const cov = d[p + 3] / 255;
         let m = clamp((cov - it.thr) / it.soft, 0, 1);
         if (m > 0 && m < 1 && it.L.noise > 0) {
           const nn = (rand(i + it.salt, j + it.salt, c.seed) - 0.5) * (it.L.noise / 100) * 1.4;
@@ -81,7 +79,7 @@ export function eachDot(c, cb) {
 }
 
 /** Vẽ toàn bộ background lên một canvas bất kỳ ở tỉ lệ cho trước. */
-export function drawTo(target, c, scale) {
+export function drawTo(target, c, scale, angles = null) {
   const g2 = target.getContext("2d");
   target.width = Math.round(c.w * scale);
   target.height = Math.round(c.h * scale);
@@ -103,7 +101,7 @@ export function drawTo(target, c, scale) {
     } else {
       g2.fillRect(x, y, c.dotSize, c.dotSize);
     }
-  });
+  }, angles);
   g2.setTransform(1, 0, 0, 1, 0, 0);
 }
 

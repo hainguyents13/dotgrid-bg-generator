@@ -48,26 +48,12 @@ export function grid(c) {
   };
 }
 
-/** Vị trí ảnh của một lớp bên trong khung, theo kiểu đặt và mức phóng to. */
+/** Vị trí ảnh của một lớp bên trong khung: vừa khung rồi nhân theo mức phóng to. */
 export function fitRect(c, layer, iw, ih) {
   const b = innerBox(c);
-  const s = layer.scale / 100;
-  let dw;
-  let dh;
-  if (layer.fit === "cover") {
-    const k = Math.max(b.w / iw, b.h / ih);
-    dw = iw * k;
-    dh = ih * k;
-  } else if (layer.fit === "stretch") {
-    dw = b.w;
-    dh = b.h;
-  } else {
-    const k = Math.min(b.w / iw, b.h / ih);
-    dw = iw * k;
-    dh = ih * k;
-  }
-  dw *= s;
-  dh *= s;
+  const k = (Math.min(b.w / iw, b.h / ih) * layer.scale) / 100;
+  const dw = iw * k;
+  const dh = ih * k;
   return {
     dx: b.x + (b.w - dw) / 2 + (layer.x / 100) * b.w,
     dy: b.y + (b.h - dh) / 2 + (layer.y / 100) * b.h,

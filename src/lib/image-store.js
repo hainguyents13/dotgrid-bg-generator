@@ -34,14 +34,15 @@ export function attachImage(layer) {
 /**
  * Vẽ ảnh lớp xuống đúng độ phân giải lưới để lấy mức phủ từng chấm.
  * Cache tự hết hạn khi khoá đổi nên không cần xoá thủ công.
+ * Khung đang xoay thì dựng lại mỗi lần và không đụng tới cache của trạng thái tĩnh.
  */
-export function buildMask(c, layer) {
+export function buildMask(c, layer, angle = 0) {
   const im = images.get(layer.id);
   if (!im) return null;
 
-  const key = [c.w, c.h, c.dotSize, c.gap, c.pad, layer.fit, layer.scale, layer.x, layer.y].join("|");
+  const key = [c.w, c.h, c.dotSize, c.gap, c.pad, layer.scale, layer.x, layer.y].join("|");
   const cached = masks.get(layer.id);
-  if (cached && cached.key === key) return cached.data;
+  if (!angle && cached && cached.key === key) return cached.data;
 
   const g = grid(c);
   const iw = im.naturalWidth || im.width || 1;
@@ -54,16 +55,22 @@ export function buildMask(c, layer) {
   const mx = cv.getContext("2d", { willReadFrequently: true });
   mx.imageSmoothingEnabled = true;
   mx.imageSmoothingQuality = "high";
+  const gx = (r.dx - g.offX) / g.pitch;
+  const gy = (r.dy - g.offY) / g.pitch;
+  const gw = r.dw / g.pitch;
+  const gh = r.dh / g.pitch;
+
   try {
-    mx.drawImage(
-      im,
-      (r.dx - g.offX) / g.pitch,
-      (r.dy - g.offY) / g.pitch,
-      r.dw / g.pitch,
-      r.dh / g.pitch
-    );
+    if (angle) {
+      mx.translate(gx + gw / 2, gy + gh / 2);
+      mx.rotate((angle * Math.PI) / 180);
+      mx.drawImage(im, -gw / 2, -gh / 2, gw, gh);
+      mx.setTransform(1, 0, 0, 1, 0, 0);
+    } else {
+      mx.drawImage(im, gx, gy, gw, gh);
+    }
     const data = mx.getImageData(0, 0, g.cols, g.rows);
-    masks.set(layer.id, { key, data });
+    if (!angle) masks.set(layer.id, { key, data });
     return data;
   } catch (e) {
     return null;

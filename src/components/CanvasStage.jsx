@@ -7,13 +7,42 @@ import { drawTo } from "../lib/renderer.js";
 export default function CanvasStage({ cfg, revision, layer, patchLayer, message, onAddFiles }) {
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
+  /* Góc xoay hiện tại của từng lớp, chỉ sống ở khung xem trước nên không nằm trong state. */
+  const anglesRef = useRef({});
   const [over, setOver] = useState(false);
+
+  const spinning = cfg.layers.some((L) => L.visible && L.spin);
 
   /* Vẽ lại sau mỗi thay đổi cấu hình, gộp trong một khung hình để kéo slider không giật. */
   useEffect(() => {
+    if (spinning) return undefined;
+    /* Tắt xoay là trả hình về góc gốc để khung xem trước khớp với file xuất ra. */
+    anglesRef.current = {};
     const id = requestAnimationFrame(() => drawTo(canvasRef.current, cfg, 1));
     return () => cancelAnimationFrame(id);
-  }, [cfg, revision]);
+  }, [cfg, revision, spinning]);
+
+  /* Có lớp đang xoay thì chạy vòng lặp liên tục, góc tính theo thời gian thực. */
+  useEffect(() => {
+    if (!spinning) return undefined;
+    let raf = 0;
+    let last = 0;
+    const tick = (now) => {
+      const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
+      last = now;
+      cfg.layers.forEach((L) => {
+        if (!L.visible || !L.spin) {
+          anglesRef.current[L.id] = 0;
+          return;
+        }
+        anglesRef.current[L.id] = ((anglesRef.current[L.id] || 0) + L.spin * dt) % 360;
+      });
+      drawTo(canvasRef.current, cfg, 1, anglesRef.current);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [cfg, revision, spinning]);
 
   const g = grid(cfg);
   const dotCount = Math.ceil(cfg.w / g.pitch) * Math.ceil(cfg.h / g.pitch);

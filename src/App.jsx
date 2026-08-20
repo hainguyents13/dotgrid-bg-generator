@@ -1,6 +1,6 @@
 /** Trạng thái cấu hình, danh sách lớp và ghép các bảng điều khiển lại. */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DEFAULT_CONFIG, nextId } from "./lib/config.js";
+import { DEFAULT_CONFIG, nextId, withLayerDefaults } from "./lib/config.js";
 import { attachImage, dropImage, hasImage } from "./lib/image-store.js";
 import { layersFromFiles } from "./lib/file-input.js";
 import { saveConfig, loadConfig } from "./lib/storage.js";
@@ -67,7 +67,7 @@ export default function App() {
     (async () => {
       await Promise.all(saved.layers.map((L) => attachImage(L)));
       if (cancelled) return;
-      const layers = saved.layers.filter((L) => hasImage(L.id));
+      const layers = saved.layers.filter((L) => hasImage(L.id)).map(withLayerDefaults);
       setCfg({ ...DEFAULT_CONFIG, ...saved, layers });
       if (layers.length) setSelectedId(layers[layers.length - 1].id);
       setRevision((n) => n + 1);
